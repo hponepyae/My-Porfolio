@@ -18,9 +18,13 @@
   width: 100%;
   height: 100vh;
   overflow: hidden;
+  --name-start: 9%;
+  --name-end: 41%;
 }
 
 .hero-display {
+  justify-content: flex-start;
+  padding-top: clamp(4.75rem, 9vh, 7rem);
   opacity: calc(1 - var(--p, 0));
   transform: translateY(calc(-160px * var(--p, 0)));
   animation: hero-fade-in 1.2s cubic-bezier(0.42, 0, 1, 1) 0.15s;
@@ -40,46 +44,31 @@
 
 .hpone-name {
   position: absolute;
-  left: 0;
-  right: 0;
+  left: clamp(1.25rem, 6vw, 6rem);
+  right: clamp(1.25rem, 6vw, 6rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
   font-family: "Montserrat", "Inter", ui-sans-serif, system-ui, sans-serif;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0;
-  white-space: nowrap;
-  line-height: 1;
+  white-space: normal;
+  line-height: 0.86;
   pointer-events: none;
   user-select: none;
-  bottom: calc(22% + 28% * var(--p, 0));
+  bottom: calc(var(--name-start) + (var(--name-end) - var(--name-start)) * var(--p, 0));
   opacity: var(--p, 0);
   will-change: bottom, opacity;
 
-  font-size: 28px;
+  font-size: clamp(2.15rem, 12.25vw, 10.75rem);
 }
 
-@media (min-width: 640px) {
-  .hpone-name {
-    font-size: 37px;
-  }
-}
-
-@media (min-width: 768px) {
-  .hpone-name {
-    font-size: 47px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .hpone-name {
-    font-size: 58px;
-  }
-}
-
-@media (min-width: 1280px) {
-  .hpone-name {
-    font-size: 69px;
-  }
+.hpone-name span {
+  display: block;
+  max-width: 100%;
+  white-space: nowrap;
 }
 
 .hpone-name--fill {
@@ -93,6 +82,93 @@
   z-index: 30;
 }
 
+.hero-intro-panel {
+  position: absolute;
+  left: clamp(1rem, 2.75vw, 2rem);
+  right: clamp(1rem, 2.75vw, 2rem);
+  bottom: clamp(2rem, 10vh, 5rem);
+  z-index: 40;
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(260px, 1.25fr) auto;
+  align-items: center;
+  gap: clamp(1.5rem, 5vw, 6rem);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  padding-top: clamp(1.15rem, 2.4vh, 2rem);
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+.hero-intro-role {
+  margin: 0 0 0.45rem;
+  color: rgba(255, 255, 255, 0.42);
+  font-size: clamp(0.68rem, 0.85vw, 0.9rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.36em;
+  text-transform: uppercase;
+}
+
+.hero-intro-name {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.94);
+  font-size: clamp(1rem, 1.2vw, 1.25rem);
+  font-weight: 400;
+  line-height: 1.25;
+  letter-spacing: 0.08em;
+}
+
+.hero-intro-copy {
+  margin: 0;
+  max-width: 560px;
+  color: rgba(255, 255, 255, 0.42);
+  font-size: clamp(0.88rem, 1vw, 1.08rem);
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+.hero-intro-link {
+  display: inline-flex;
+  min-height: 3.25rem;
+  min-width: clamp(9.75rem, 12vw, 12rem);
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #f2b705;
+  padding: 0.85rem 1.4rem;
+  color: #f7c62f;
+  font-size: clamp(0.72rem, 0.85vw, 0.88rem);
+  font-weight: 700;
+  letter-spacing: 0.32em;
+  line-height: 1;
+  text-transform: uppercase;
+  transition:
+    background-color 180ms ease,
+    color 180ms ease,
+    border-color 180ms ease;
+}
+
+.hero-intro-link:hover {
+  border-color: #ffd86b;
+  background: #f7c62f;
+  color: #050505;
+}
+
+@media (min-width: 1024px) {
+  .hero-pinned {
+    --name-end: 31%;
+  }
+
+  .hero-display {
+    padding-top: clamp(6.25rem, 12vh, 8.75rem);
+  }
+
+  .hpone-name {
+    font-size: clamp(2.15rem, 9.8vw, 8.8rem);
+  }
+
+  .hero-intro-panel {
+    bottom: 0;
+  }
+}
+
 @media (max-width: 640px) {
   .hero-track {
     height: 170svh;
@@ -100,11 +176,12 @@
 
   .hero-pinned {
     height: calc(100svh - 4rem);
+    --name-start: 8%;
+    --name-end: 43%;
   }
 
   .hero-display {
-    justify-content: flex-start;
-    padding-top: clamp(5.25rem, 19svh, 7.25rem);
+    padding-top: clamp(5.75rem, 22svh, 7.5rem);
   }
 
   .hpone-name--outline {
@@ -123,7 +200,24 @@
     max-height: calc(100svh - 6rem);
   }
 
-  .hpone-name {
-    bottom: calc(10% + 22% * var(--p, 0));
+  .hero-intro-panel {
+    bottom: 1rem;
+    grid-template-columns: 1fr;
+    gap: 0.95rem;
+    padding-top: 1rem;
+  }
+
+  .hero-intro-role {
+    margin-bottom: 0.35rem;
+    letter-spacing: 0.28em;
+  }
+
+  .hero-intro-copy {
+    max-width: 26rem;
+  }
+
+  .hero-intro-link {
+    width: 100%;
+    min-height: 2.9rem;
   }
 }
