@@ -1,0 +1,63 @@
+<section id="home" class="hero-section">
+  <div class="hero-track">
+    <div class="hero-pinned">
+      <div class="absolute inset-x-0 top-0 h-px bg-white/10 z-40"></div>
+
+      <div class="relative mx-auto w-full h-full max-w-[1600px] px-4 sm:px-8">
+        <div class="relative h-full flex items-center justify-center">
+
+          <div
+            class="hero-display pointer-events-none absolute inset-0 flex flex-col items-center justify-center select-none z-[5]"
+            [style.--p]="scrollProgress()"
+            aria-hidden="true"
+          >
+            <div
+              class="hero-uiux flex w-full items-center justify-center gap-[28px] sm:gap-[30px] md:gap-[40px] lg:gap-[50px] xl:gap-[60px] font-mono font-extrabold uppercase leading-[0.9] text-[#D9D9D9] text-[120px] sm:text-[140px] md:text-[180px] lg:text-[220px] xl:text-[260px]"
+              style="filter: drop-shadow(10px 14px 18px rgba(0,0,0,0.55));"
+            >
+              <span class="relative">
+                <span
+                  class="absolute right-full mr-[10px] top-1/4 font-sans font-normal normal-case italic text-white text-base sm:text-lg lg:text-xl whitespace-nowrap leading-none"
+                  style="transform: translateY(-50%) rotate(-90deg); transform-origin: right center;"
+                  aria-hidden="true"
+                >Hello I&rsquo;m</span>
+                UI
+              </span>
+              <span>UX</span>
+            </div>
+
+            <div
+              class="hero-designer -mt-2 sm:-mt-4 md:-mt-6 w-full text-center font-mono font-extrabold uppercase leading-[0.9] text-gold-500 text-[100px] sm:text-[115px] md:text-[150px] lg:text-[185px] xl:text-[220px] tracking-tight"
+              style="filter: drop-shadow(10px 14px 18px rgba(0,0,0,0.55));"
+            >
+              Designer
+            </div>
+          </div>
+
+          <div
+            class="hpone-name hpone-name--fill"
+            [style.--p]="scrollProgress()"
+            aria-hidden="true"
+          >
+            Hpone Pyae Ko Ko
+          </div>
+
+          <div class="hero-portrait-wrap relative z-20 flex items-end justify-center w-full h-full pt-10 pb-20">
+            <img
+              src="photo/my%20photo.png"
+              alt="Portrait"
+              class="hero-portrait block max-h-[82vh] w-auto object-contain drop-shadow-[0_30px_60px_rgba(0,0,0,0.6)]"
+            />
+          </div>
+
+          <div
+            class="hpone-name hpone-name--outline"
+            [style.--p]="scrollProgress()"
+          >
+            Hpone Pyae Ko Ko
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

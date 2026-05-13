@@ -1,0 +1,74 @@
+<header
+  class="sticky top-0 z-50 border-b border-transparent transition-all duration-300"
+  [ngClass]="
+    isScrolled()
+      ? 'border-white/10 bg-ink-950/75 backdrop-blur'
+      : 'bg-transparent'
+  "
+>
+  <div class="container-shell">
+    <div class="flex h-16 items-center justify-between">
+      <a
+        class="font-display text-sm tracking-wide2 text-white"
+        href="#home"
+        (click)="close()"
+      >
+        <span class="text-gold-500">HP</span>KK
+      </a>
+
+      <nav class="hidden items-center gap-8 md:flex">
+        <a class="nav-link" href="#home">Home</a>
+        <a class="nav-link" href="#about">About</a>
+        <a class="nav-link" href="#skills">Skills</a>
+        <a class="nav-link" href="#projects">Projects</a>
+        <a class="nav-link" href="#contact">Contact</a>
+      </nav>
+
+      <div class="hidden md:flex items-center gap-3">
+        <a class="btn-gold-outline" href="#contact">Hire Me</a>
+      </div>
+
+      <button
+        class="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-md border border-white/10 bg-white/5 text-white/90 transition hover:bg-white/10"
+        type="button"
+        (click)="toggle()"
+        aria-label="Toggle menu"
+      >
+        <svg
+          class="h-5 w-5"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M4 7H20M4 12H20M4 17H20"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div
+    class="md:hidden overflow-hidden border-t border-white/10 bg-ink-950/85 backdrop-blur transition-all duration-300"
+    [ngClass]="isOpen() ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'"
+  >
+    <div class="container-shell py-4">
+      <div class="flex flex-col gap-3">
+        <a class="nav-link w-fit" href="#home" (click)="close()">Home</a>
+        <a class="nav-link w-fit" href="#about" (click)="close()">About</a>
+        <a class="nav-link w-fit" href="#skills" (click)="close()">Skills</a>
+        <a class="nav-link w-fit" href="#projects" (click)="close()">Projects</a>
+        <a class="nav-link w-fit" href="#contact" (click)="close()">Contact</a>
+        <div class="pt-2">
+          <a class="btn-gold-outline w-full" href="#contact" (click)="close()"
+            >Hire Me</a
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
