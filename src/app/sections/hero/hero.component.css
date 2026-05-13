@@ -94,18 +94,33 @@
 }
 
 @media (max-width: 640px) {
+  .hero-track {
+    height: 170svh;
+  }
+
+  .hero-pinned {
+    height: calc(100svh - 4rem);
+  }
+
+  .hero-display {
+    justify-content: flex-start;
+    padding-top: clamp(5.25rem, 19svh, 7.25rem);
+  }
+
   .hpone-name--outline {
     -webkit-text-stroke-width: 1.25px;
   }
 
   .hero-portrait-wrap {
-    padding-top: 0;
-    padding-bottom: 1.5rem;
-    align-items: flex-end;
+    align-items: flex-start;
+    padding-top: clamp(7.5rem, 28svh, 10rem);
+    padding-bottom: 0;
   }
 
   .hero-portrait {
-    max-height: 82vh;
+    width: min(105vw, 360px);
+    max-width: none;
+    max-height: calc(100svh - 6rem);
   }
 
   .hpone-name {
