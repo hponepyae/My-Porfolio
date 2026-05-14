@@ -1,0 +1,41 @@
+:host {
+  display: block;
+}
+
+.skill-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  padding: 0.55rem 1.15rem;
+  font-family: 'Montserrat', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(0.7rem, 2.8vw, 0.95rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #0a0a0a;
+  white-space: nowrap;
+  box-shadow:
+    0 14px 36px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.12) inset;
+  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.35));
+}
+
+@media (min-width: 640px) {
+  .skill-pill {
+    padding: 0.65rem 1.35rem;
+    font-size: clamp(0.78rem, 1.6vw, 0.95rem);
+  }
+
+  .skill-pill--wide {
+    padding-top: 0.55rem;
+    padding-bottom: 0.55rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .skill-pill {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.95rem;
+  }
+}

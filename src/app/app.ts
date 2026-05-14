@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { NavbarComponent } from './shared/navbar/navbar.component';
 import { HeroComponent } from './sections/hero/hero.component';
 import { AboutComponent } from './sections/about/about.component';
-import { ProjectsComponent } from './sections/projects/projects.component';
+import { SkillsComponent } from './sections/skills/skills.component';
 import { ServicesComponent } from './sections/services/services.component';
 import { ContactComponent } from './sections/contact/contact.component';
 import { FooterComponent } from './shared/footer/footer.component';
@@ -14,7 +14,7 @@ import { FooterComponent } from './shared/footer/footer.component';
     NavbarComponent,
     HeroComponent,
     AboutComponent,
-    ProjectsComponent,
+    SkillsComponent,
     ServicesComponent,
     ContactComponent,
     FooterComponent,
