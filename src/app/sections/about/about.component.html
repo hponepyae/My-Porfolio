@@ -1,83 +1,91 @@
-<section id="about" class="relative py-16 md:py-24">
-  <div class="container-shell">
-    <div class="grid gap-10 lg:grid-cols-12 lg:items-start">
-      <div class="lg:col-span-5">
-        <div class="font-display text-xs uppercase tracking-wide2 text-gold-500">
-          About me
-        </div>
-        <h2 class="mt-3 font-display text-3xl sm:text-4xl">
-          Design-first, detail-obsessed.
-        </h2>
-        <p class="mt-5 text-white/65">
-          I’m a UI/UX designer and frontend developer focused on building
-          polished, responsive interfaces. I care deeply about consistency,
-          accessibility, and shipping work that feels premium.
-        </p>
+<section
+  id="about"
+  class="about-showcase relative overflow-hidden bg-[#050505]"
+  [class.about-showcase-visible]="isVisible()"
+>
+  <div
+    class="about-shell mx-auto w-full max-w-[1540px] px-5 py-16 sm:px-8 md:py-20 lg:px-12 xl:px-16"
+  >
+    <div class="about-heading">
+      <img src="photo/About%20Me.svg" alt="About me" class="block h-auto w-full max-w-[771px]" />
+    </div>
 
-        <div class="mt-6 flex flex-wrap gap-2">
-          <span class="chip">Figma</span>
-          <span class="chip">Wireframing</span>
-          <span class="chip">User Flows</span>
-          <span class="chip">React / Angular</span>
-          <span class="chip">Tailwind</span>
+    <div class="about-content grid gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:gap-20 xl:gap-28">
+      <div class="about-left flex flex-col">
+        <h2 class="toc-title font-display uppercase text-white">
+          <span>Table</span>
+          <span class="toc-outline">Of</span>
+          <span>Contents</span>
+        </h2>
+
+        <div class="about-visual" aria-hidden="true">
+          <img src="photo/my%20Image.png" alt="" class="about-person" />
+          <img src="photo/XD%20icon.png" alt="" class="float-icon float-icon-xd" />
+          <img src="photo/VS%20code%20icon.png" alt="" class="float-icon float-icon-vscode" />
+          <img src="photo/Canva%20icon.png" alt="" class="float-icon float-icon-canva" />
+          <img src="photo/claude%20icon.png" alt="" class="float-icon float-icon-claude" />
         </div>
       </div>
 
-      <div class="lg:col-span-7">
-        <div class="card p-6 md:p-8">
-          <div class="grid gap-6 md:grid-cols-2">
-            <div class="rounded-2xl border border-white/10 bg-white/5 p-5">
-              <div class="text-xs font-display uppercase tracking-wide2 text-white/55">
-                What I do
-              </div>
-              <div class="mt-3 space-y-3 text-sm text-white/70">
-                <div class="flex gap-3">
-                  <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-gold-500"></span>
-                  <p>UI design with strong hierarchy and spacing.</p>
-                </div>
-                <div class="flex gap-3">
-                  <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-gold-500"></span>
-                  <p>Reusable components + design systems.</p>
-                </div>
-                <div class="flex gap-3">
-                  <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-gold-500"></span>
-                  <p>Frontend implementation with smooth motion.</p>
-                </div>
-              </div>
+      <div class="about-right">
+        <ol class="about-list">
+          <li class="about-list-item">
+            <span class="about-number">01</span>
+            <div>
+              <h3>UX Research</h3>
+              <p>User research, interviews, usability testing and analysis</p>
             </div>
+          </li>
+          <li class="about-list-item">
+            <span class="about-number">02</span>
+            <div>
+              <h3>Visual Design</h3>
+              <p>UI design, design systems, brand identity</p>
+            </div>
+          </li>
+          <li class="about-list-item">
+            <span class="about-number">03</span>
+            <div>
+              <h3>Prototyping</h3>
+              <p>Interactive prototypes and micro-interaction design</p>
+            </div>
+          </li>
+          <li class="about-list-item">
+            <span class="about-number">04</span>
+            <div>
+              <h3>Handoff</h3>
+              <p>Developer-ready specs, documentation, QA</p>
+            </div>
+          </li>
+        </ol>
 
-            <div class="rounded-2xl border border-white/10 bg-white/5 p-5">
-              <div class="text-xs font-display uppercase tracking-wide2 text-white/55">
-                Toolbox
-              </div>
-              <div class="mt-3 flex flex-wrap gap-2">
-                <span class="chip">Design tokens</span>
-                <span class="chip">Prototyping</span>
-                <span class="chip">Auto-layout</span>
-                <span class="chip">Type scale</span>
-                <span class="chip">Accessibility</span>
-              </div>
-            </div>
+        <div class="about-bio">
+          <p>
+            I'm a UI/UX Designer with 3+ years of experience crafting digital products for startups
+            and established companies. I combine design thinking with aesthetic precision to build
+            experiences that users love.
+          </p>
+          <p>
+            From wireframes to high-fidelity prototypes, I work across the full design spectrum
+            &mdash; always with a focus on clarity, usability, and visual impact.
+          </p>
+        </div>
+
+        <div class="about-stats" aria-label="Experience statistics">
+          <div class="stat-block">
+            <strong>{{ projectsDone() }}+</strong>
+            <span>Projects Done</span>
           </div>
-
-          <div class="mt-6 rounded-2xl border border-white/10 bg-ink-900/40 p-5">
-            <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div>
-                <div class="text-xs font-display uppercase tracking-wide2 text-white/55">
-                  Availability
-                </div>
-                <div class="mt-2 text-white/75">
-                  Open for freelance / full-time opportunities.
-                </div>
-              </div>
-              <a class="btn-gold-outline w-full md:w-auto" href="#contact"
-                >Let’s talk</a
-              >
-            </div>
+          <div class="stat-block">
+            <strong>{{ happyClients() }}+</strong>
+            <span>Happy Clients</span>
+          </div>
+          <div class="stat-block">
+            <strong>{{ yearsActive() }}+</strong>
+            <span>Years Active</span>
           </div>
         </div>
       </div>
     </div>
   </div>
 </section>
-

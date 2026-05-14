@@ -5,6 +5,7 @@
 @layer base {
   :root {
     color-scheme: dark;
+    --gold-hand-cursor: url('/photo/coursor.svg');
   }
 
   html,
@@ -14,10 +15,32 @@
 
   html {
     scroll-behavior: smooth;
+    cursor:
+      var(--gold-hand-cursor) 24 4,
+      auto;
   }
 
   body {
     @apply bg-ink-950 text-white font-sans antialiased;
+    cursor:
+      var(--gold-hand-cursor) 24 4,
+      auto;
+  }
+
+  a,
+  button,
+  [role='button'],
+  input[type='button'],
+  input[type='submit'] {
+    cursor:
+      var(--gold-hand-cursor) 24 4,
+      pointer;
+  }
+
+  input,
+  textarea,
+  select {
+    cursor: auto;
   }
 }
 
@@ -31,7 +54,7 @@
   }
 
   .nav-link::after {
-    content: "";
+    content: '';
     @apply absolute -bottom-1 left-0 h-[1px] w-0 bg-gold-600 transition-all duration-300;
   }
 
