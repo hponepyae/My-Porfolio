@@ -19,7 +19,7 @@
   height: 100vh;
   overflow: hidden;
   --name-start: 9%;
-  --name-end: 41%;
+  --name-end: 42%;
 }
 
 .hero-display {
@@ -44,42 +44,23 @@
 
 .hpone-name {
   position: absolute;
-  left: clamp(1.25rem, 6vw, 6rem);
-  right: clamp(1.25rem, 6vw, 6rem);
+  left: 0;
+  right: 0;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  font-family: "Montserrat", "Inter", ui-sans-serif, system-ui, sans-serif;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0;
-  white-space: normal;
-  line-height: 0.86;
+  justify-content: center;
   pointer-events: none;
   user-select: none;
   bottom: calc(var(--name-start) + (var(--name-end) - var(--name-start)) * var(--p, 0));
   opacity: var(--p, 0);
   will-change: bottom, opacity;
-
-  font-size: clamp(2.15rem, 12.25vw, 10.75rem);
-}
-
-.hpone-name span {
-  display: block;
-  max-width: 100%;
-  white-space: nowrap;
-}
-
-.hpone-name--fill {
-  color: #f7c62f;
-  z-index: 10;
-}
-
-.hpone-name--outline {
-  color: transparent;
-  -webkit-text-stroke: 2px #f7c62f;
   z-index: 30;
+}
+
+.hpone-name-img {
+  display: block;
+  width: clamp(22rem, 58vw, 58rem);
+  max-width: 92vw;
+  height: auto;
 }
 
 .hero-intro-panel {
@@ -153,15 +134,11 @@
 
 @media (min-width: 1024px) {
   .hero-pinned {
-    --name-end: 31%;
+    --name-end: 45%;
   }
 
   .hero-display {
     padding-top: clamp(6.25rem, 12vh, 8.75rem);
-  }
-
-  .hpone-name {
-    font-size: clamp(2.15rem, 9.8vw, 8.8rem);
   }
 
   .hero-intro-panel {
@@ -177,15 +154,11 @@
   .hero-pinned {
     height: calc(100svh - 4rem);
     --name-start: 8%;
-    --name-end: 43%;
+    --name-end: 40%;
   }
 
   .hero-display {
     padding-top: clamp(5.75rem, 22svh, 7.5rem);
-  }
-
-  .hpone-name--outline {
-    -webkit-text-stroke-width: 1.25px;
   }
 
   .hero-portrait-wrap {

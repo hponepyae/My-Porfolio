@@ -17,9 +17,6 @@
   align-items: center;
   gap: clamp(0.28rem, 0.68vw, 0.62rem);
   margin: 0;
-  text-shadow:
-    0 0 20px rgba(255, 255, 255, 0.2),
-    0 0 42px rgba(255, 255, 255, 0.1);
 }
 
 .skills-heading-line {
@@ -39,7 +36,6 @@
   color: transparent;
   -webkit-text-fill-color: transparent;
   -webkit-text-stroke: 1.25px rgba(255, 255, 255, 0.88);
-  text-shadow: 0 0 18px rgba(255, 255, 255, 0.14);
 }
 
 .skills-description {
@@ -170,6 +166,36 @@
 .skill-pill--purple {
   --glow-rgb: 196, 167, 255;
   background: #c4a7ff;
+}
+
+@media (min-width: 768px) and (max-height: 900px) {
+  .skills-stage {
+    padding: clamp(2.75rem, 4.5vh, 4rem) clamp(1rem, 4vw, 3rem) clamp(1.5rem, 3vh, 2.5rem);
+  }
+
+  .skills-heading-line {
+    font-size: clamp(2.2rem, 5.5vw, 4.25rem);
+  }
+
+  .skills-heading-line:last-child {
+    font-size: clamp(1.85rem, 4.7vw, 3.65rem);
+  }
+
+  .skills-description {
+    margin-top: clamp(0.9rem, 2vh, 1.6rem);
+  }
+
+  .skills-pile {
+    margin-top: clamp(2.5rem, 4.5vh, 4rem);
+  }
+
+  .skills-drop-zone {
+    height: clamp(15rem, 25vh, 18rem);
+  }
+
+  .skill-pill-slot {
+    top: 32%;
+  }
 }
 
 @media (max-width: 767px) {

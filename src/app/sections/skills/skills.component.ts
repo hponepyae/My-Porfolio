@@ -17,7 +17,9 @@ type HeadingLine = {
 };
 
 const HIGHLIGHT_COLOR = '#ffbe0c';
-const HIGHLIGHT_SHADOW = '0 0 12px rgba(255, 190, 12, 0.76), 0 0 30px rgba(255, 190, 12, 0.32)';
+const HIGHLIGHT_SHADOW = 'none';
+const OUTLINE_COLOR = '#FF8C42';
+const OUTLINE_STROKE = 'transparent';
 
 @Component({
   selector: 'app-skills',
@@ -92,7 +94,7 @@ export class SkillsComponent implements AfterViewInit, OnDestroy {
       color: 'transparent',
       WebkitTextFillColor: 'transparent',
       WebkitTextStrokeColor: 'rgba(255, 255, 255, 0.88)',
-      textShadow: '0 0 18px rgba(255, 255, 255, 0.14)',
+      textShadow: 'none',
     });
     gsap.set(badgeElements, {
       autoAlpha: 0,
@@ -115,12 +117,12 @@ export class SkillsComponent implements AfterViewInit, OnDestroy {
       },
     });
 
-    // Characters persist once revealed. THE TOOLS keeps transparent fill and becomes a yellow outline.
     timeline.to(revealChars, {
       color: (_: number, target: Element) => this.finalColor(target as HTMLElement),
       WebkitTextFillColor: (_: number, target: Element) =>
         this.finalFillColor(target as HTMLElement),
-      WebkitTextStrokeColor: HIGHLIGHT_COLOR,
+      WebkitTextStrokeColor: (_: number, target: Element) =>
+        this.finalStrokeColor(target as HTMLElement),
       textShadow: HIGHLIGHT_SHADOW,
       duration: 0.34,
       ease: 'sine.inOut',
@@ -174,7 +176,8 @@ export class SkillsComponent implements AfterViewInit, OnDestroy {
       color: (_: number, target: Element) => this.finalColor(target as HTMLElement),
       WebkitTextFillColor: (_: number, target: Element) =>
         this.finalFillColor(target as HTMLElement),
-      WebkitTextStrokeColor: HIGHLIGHT_COLOR,
+      WebkitTextStrokeColor: (_: number, target: Element) =>
+        this.finalStrokeColor(target as HTMLElement),
       textShadow: HIGHLIGHT_SHADOW,
     });
     gsap.set(badgeElements, {
@@ -187,10 +190,14 @@ export class SkillsComponent implements AfterViewInit, OnDestroy {
   }
 
   private finalColor(target: HTMLElement): string {
-    return target.dataset['outlined'] === 'true' ? 'transparent' : HIGHLIGHT_COLOR;
+    return target.dataset['outlined'] === 'true' ? OUTLINE_COLOR : HIGHLIGHT_COLOR;
   }
 
   private finalFillColor(target: HTMLElement): string {
-    return target.dataset['outlined'] === 'true' ? 'transparent' : HIGHLIGHT_COLOR;
+    return target.dataset['outlined'] === 'true' ? OUTLINE_COLOR : HIGHLIGHT_COLOR;
+  }
+
+  private finalStrokeColor(target: HTMLElement): string {
+    return target.dataset['outlined'] === 'true' ? OUTLINE_STROKE : HIGHLIGHT_COLOR;
   }
 }
