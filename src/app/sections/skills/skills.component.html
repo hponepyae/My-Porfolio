@@ -41,7 +41,7 @@
               >
                 <path
                   class="skills-brush__reveal"
-                  d="M-30 22 C 100 17, 250 11, 430 5"
+                  [attr.d]="(lineIndex % 2 ? brushStrokes.down : brushStrokes.up).reveal"
                   pathLength="1"
                   stroke-dasharray="1 1"
                   stroke-dashoffset="1"
@@ -50,7 +50,7 @@
             </defs>
             <path
               class="skills-brush__stroke"
-              [attr.d]="brushShape"
+              [attr.d]="(lineIndex % 2 ? brushStrokes.down : brushStrokes.up).shape"
               [attr.mask]="'url(#skills-brush-mask-' + lineIndex + ')'"
             />
           </svg>

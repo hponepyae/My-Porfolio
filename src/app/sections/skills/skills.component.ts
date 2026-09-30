@@ -46,10 +46,22 @@ export class SkillsComponent implements AfterViewInit, OnDestroy {
   private gsapContext?: gsap.Context;
   private motionDisabled = false;
 
-  // Marker stroke in the brush SVG's 400x28 viewBox: rounded start, tapering to a point on the right.
-  readonly brushShape =
-    'M8 16.5 C 60 12.5, 140 9.5, 230 7.5 C 300 6, 360 4.6, 397 5 C 362 10.5, 302 14.2, 230 17.8 ' +
-    'C 150 21.4, 70 24.6, 13 25.2 C 3 25.4, 1.5 17.2, 8 16.5 Z';
+  // Marker strokes in the brush SVG's 400x28 viewBox: rounded start, tapering to a point on the right.
+  // Lines alternate between a stroke that rises to the right and a gentler one that dips.
+  readonly brushStrokes = {
+    up: {
+      shape:
+        'M8 16.5 C 60 12.5, 140 9.5, 230 7.5 C 300 6, 360 4.6, 397 5 C 362 10.5, 302 14.2, 230 17.8 ' +
+        'C 150 21.4, 70 24.6, 13 25.2 C 3 25.4, 1.5 17.2, 8 16.5 Z',
+      reveal: 'M-30 22 C 100 17, 250 11, 430 5',
+    },
+    down: {
+      shape:
+        'M8 4.65 C 60 5.5, 140 6.6, 230 7.85 C 300 9.6, 360 14.4, 397 17 C 362 18.8, 302 18.6, 230 18.15 ' +
+        'C 150 16.8, 70 14.6, 13 13.6 C 3 13.8, 1.5 5.4, 8 4.65 Z',
+      reveal: 'M-30 8 C 100 11, 250 14, 430 19',
+    },
+  };
 
   // Long lines are compact so they fit on one line on small screens.
   readonly headingLines: HeadingLine[] = [

@@ -54,13 +54,9 @@
   pointer-events: none;
 }
 
-/* Neighbouring strokes alternate: odd lines end high on the right, even lines are mirrored to end low. */
+/* Rising strokes (odd lines) get a little extra lift; dipping strokes (even lines) use their own shape. */
 .skills-heading-line:nth-child(odd) .skills-brush {
   transform: rotate(-0.8deg);
-}
-
-.skills-heading-line:nth-child(even) .skills-brush {
-  transform: translateY(0.1em) scaleY(-1) rotate(-0.8deg);
 }
 
 .skills-brush__stroke {
