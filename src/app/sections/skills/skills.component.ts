@@ -10,16 +10,28 @@ import {
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
+type HeadingSegment = {
+  text: string;
+  outlined?: boolean;
+};
+
+type HeadingChar = {
+  char: string;
+  outlined: boolean;
+};
+
 type HeadingLine = {
   text: string;
-  chars: string[];
-  outlined?: boolean;
+  chars: HeadingChar[];
+  compact: boolean;
 };
 
 const HIGHLIGHT_COLOR = '#ffbe0c';
 const HIGHLIGHT_SHADOW = 'none';
 const OUTLINE_COLOR = '#FF8C42';
 const OUTLINE_STROKE = 'transparent';
+const CHAR_STAGGER = 0.092;
+const CHAR_REVEAL_DURATION = 0.34;
 
 @Component({
   selector: 'app-skills',
@@ -34,11 +46,16 @@ export class SkillsComponent implements AfterViewInit, OnDestroy {
   private gsapContext?: gsap.Context;
   private motionDisabled = false;
 
+  // Marker stroke in the brush SVG's 400x28 viewBox: rounded start, tapering to a point on the right.
+  readonly brushShape =
+    'M8 16.5 C 60 12.5, 140 9.5, 230 7.5 C 300 6, 360 4.6, 397 5 C 362 10.5, 302 14.2, 230 17.8 ' +
+    'C 150 21.4, 70 24.6, 13 25.2 C 3 25.4, 1.5 17.2, 8 16.5 Z';
+
+  // Long lines are compact so they fit on one line on small screens.
   readonly headingLines: HeadingLine[] = [
-    this.createHeadingLine('Mastering'),
-    this.createHeadingLine('The Tools', true),
-    this.createHeadingLine('That Shape'),
-    this.createHeadingLine('Digital Experiences'),
+    this.createHeadingLine([{ text: 'Mastering' }]),
+    this.createHeadingLine([{ text: 'The Tools', outlined: true }]),
+    this.createHeadingLine([{ text: 'Digital Experiences' }], true),
   ];
 
   ngAfterViewInit(): void {
@@ -66,11 +83,16 @@ export class SkillsComponent implements AfterViewInit, OnDestroy {
     this.gsapContext?.revert();
   }
 
-  private createHeadingLine(text: string, outlined = false): HeadingLine {
+  private createHeadingLine(segments: HeadingSegment[], compact = false): HeadingLine {
     return {
-      text,
-      chars: Array.from(text.toUpperCase()),
-      outlined,
+      text: segments.map((segment) => segment.text).join(''),
+      chars: segments.flatMap((segment) =>
+        Array.from(segment.text.toUpperCase()).map((char) => ({
+          char,
+          outlined: !!segment.outlined,
+        })),
+      ),
+      compact,
     };
   }
 
@@ -124,16 +146,18 @@ export class SkillsComponent implements AfterViewInit, OnDestroy {
       WebkitTextStrokeColor: (_: number, target: Element) =>
         this.finalStrokeColor(target as HTMLElement),
       textShadow: HIGHLIGHT_SHADOW,
-      duration: 0.34,
+      duration: CHAR_REVEAL_DURATION,
       ease: 'sine.inOut',
       stagger: {
-        each: 0.092,
+        each: CHAR_STAGGER,
         from: 'start',
       },
     });
 
+    this.addUnderlineTweens(timeline, headingGroups, revealChars);
+
     // Badges stay invisible through the text phase, then slowly fall from behind the heading.
-    const badgeDropStart = revealChars.length * 0.092 + 0.72;
+    const badgeDropStart = revealChars.length * CHAR_STAGGER + 0.72;
 
     timeline
       .to(
@@ -171,7 +195,41 @@ export class SkillsComponent implements AfterViewInit, OnDestroy {
       });
   }
 
+  // Each line's brush stroke is painted in lockstep with its letters by drawing the mask path.
+  private addUnderlineTweens(
+    timeline: gsap.core.Timeline,
+    headingGroups: HTMLElement[][],
+    revealChars: HTMLElement[],
+  ): void {
+    this.getBrushReveals().forEach((reveal, lineIndex) => {
+      const lineChars = (headingGroups[lineIndex] ?? []).filter((char) => char.textContent?.trim());
+
+      if (!lineChars.length) {
+        return;
+      }
+
+      const start = revealChars.indexOf(lineChars[0]) * CHAR_STAGGER;
+      const end =
+        revealChars.indexOf(lineChars[lineChars.length - 1]) * CHAR_STAGGER + CHAR_REVEAL_DURATION;
+
+      gsap.set(reveal, { attr: { 'stroke-dashoffset': 1 } });
+      timeline.to(
+        reveal,
+        { attr: { 'stroke-dashoffset': 0 }, duration: end - start, ease: 'none' },
+        start,
+      );
+    });
+  }
+
+  private getBrushReveals(): SVGPathElement[] {
+    const section = this.elementRef.nativeElement as HTMLElement;
+    return Array.from(
+      section.querySelectorAll('.skills-brush__reveal') as NodeListOf<SVGPathElement>,
+    );
+  }
+
   private showReducedMotionState(headingChars: HTMLElement[], badgeElements: HTMLElement[]): void {
+    gsap.set(this.getBrushReveals(), { attr: { 'stroke-dashoffset': 0 } });
     gsap.set(headingChars, {
       color: (_: number, target: Element) => this.finalColor(target as HTMLElement),
       WebkitTextFillColor: (_: number, target: Element) =>

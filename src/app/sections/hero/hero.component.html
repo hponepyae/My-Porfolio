@@ -37,9 +37,15 @@
           <div
             class="hpone-name"
             [style.--p]="scrollProgress()"
+            [style.--name-end]="nameEnd()"
             aria-hidden="true"
           >
-            <img src="photo/my%20name.svg" alt="Hpone Pyae" class="hpone-name-img" />
+            <img
+              src="photo/my%20name.svg"
+              alt="Hpone Pyae"
+              class="hpone-name-img"
+              (load)="onWindowResize()"
+            />
           </div>
 
           <div class="hero-portrait-wrap relative z-20 flex items-end justify-center w-full h-full pt-10 pb-20">
@@ -47,6 +53,7 @@
               src="photo/my%20photo.png"
               alt="Portrait"
               class="hero-portrait block max-h-[82vh] w-auto object-contain drop-shadow-[0_30px_60px_rgba(0,0,0,0.6)]"
+              (load)="onWindowResize()"
             />
           </div>
 

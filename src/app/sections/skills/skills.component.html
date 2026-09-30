@@ -8,21 +8,52 @@
       @for (line of headingLines; track line.text; let lineIndex = $index) {
         <span
           class="skills-heading-line"
-          [class.skills-heading-line--outline]="line.outlined"
+          [class.skills-heading-line--compact]="line.compact"
           [attr.aria-label]="line.text"
         >
-          @for (char of line.chars; track $index) {
+          @for (item of line.chars; track $index) {
             <span
               #headingChar
               class="skills-char"
-              [class.skills-char--space]="char === ' '"
+              [class.skills-char--space]="item.char === ' '"
               [attr.data-line]="lineIndex"
-              [attr.data-outlined]="line.outlined"
+              [attr.data-outlined]="item.outlined"
               aria-hidden="true"
             >
-              {{ char === ' ' ? '\u00a0' : char }}
+              {{ item.char === ' ' ? '\u00a0' : item.char }}
             </span>
           }
+          <svg
+            class="skills-brush"
+            viewBox="0 0 400 28"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <defs>
+              <mask
+                [attr.id]="'skills-brush-mask-' + lineIndex"
+                maskUnits="userSpaceOnUse"
+                x="-60"
+                y="-14"
+                width="520"
+                height="56"
+              >
+                <path
+                  class="skills-brush__reveal"
+                  d="M-30 22 C 100 17, 250 11, 430 5"
+                  pathLength="1"
+                  stroke-dasharray="1 1"
+                  stroke-dashoffset="1"
+                />
+              </mask>
+            </defs>
+            <path
+              class="skills-brush__stroke"
+              [attr.d]="brushShape"
+              [attr.mask]="'url(#skills-brush-mask-' + lineIndex + ')'"
+            />
+          </svg>
         </span>
       }
     </h2>
