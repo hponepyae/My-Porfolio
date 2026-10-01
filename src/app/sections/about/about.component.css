@@ -353,6 +353,45 @@
   }
 }
 
+/* Phone list spotlight (class set from the component). Scrolling lights each title up letter by
+   letter: the letter being lit burns white-hot with a gold glow and settles to gold behind it.
+   Everything is computed from three variables
+   written per frame from the scroll position, so nothing depends on timed transitions:
+   --f letters lit so far, --fill the same as 0..1, --on 1 while this is the current item. */
+@media (max-width: 767px) {
+  .about-list--spotlight .about-number {
+    color: color-mix(
+      in srgb,
+      #ffbe0c calc(min(1, var(--fill, 0) * 4) * var(--on, 0) * 100%),
+      rgba(255, 255, 255, 0.18)
+    );
+  }
+
+  .about-list--spotlight .about-char {
+    /* How lit this letter is, and how close the travelling head is to it. */
+    --lit: calc(clamp(0, var(--f, 0) - var(--i), 1) * var(--on, 0));
+    --d: calc(var(--f, 0) - var(--i) - 0.5);
+    --head: calc(
+      clamp(0, 1 - max(var(--d), var(--d) * -1) / 1.4, 1) * min(1, var(--f, 0) * 2) * var(--on, 0)
+    );
+    display: inline-block;
+    white-space: pre;
+    color: color-mix(
+      in srgb,
+      #fff7dc calc(var(--head) * 90%),
+      color-mix(in srgb, #ffbe0c calc(var(--lit) * 100%), rgba(255, 255, 255, 0.34))
+    );
+    text-shadow:
+      0 0 calc(var(--head) * 14px) rgba(255, 190, 12, calc(var(--head) * 0.95)),
+      0 0 calc(var(--lit) * 22px) rgba(255, 140, 66, calc(var(--lit) * 0.3));
+    transform: translate3d(0, calc(var(--head) * -0.1em), 0);
+  }
+
+  .about-list--spotlight .about-list-item p {
+    color: rgba(255, 255, 255, calc(0.2 + var(--fill, 0) * var(--on, 0) * 0.45));
+  }
+}
+
 @media (max-width: 439px) {
   .toc-title span {
     font-size: 3.05rem;

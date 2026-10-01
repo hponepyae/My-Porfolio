@@ -20,7 +20,6 @@
   height: 100vh;
   overflow: hidden;
   --name-start: 9%;
-  --name-end: 42%;
 }
 
 .hero-display {
@@ -51,9 +50,11 @@
   justify-content: center;
   pointer-events: none;
   user-select: none;
-  bottom: calc(var(--name-start) + (var(--name-end) - var(--name-start)) * var(--p, 0));
+  /* Rises by transform (not by animating bottom) so the travel never triggers layout. */
+  bottom: var(--name-start);
+  transform: translate3d(0, calc(var(--name-travel, 0px) * var(--p, 0) * -1), 0);
   opacity: var(--p, 0);
-  will-change: bottom, opacity;
+  will-change: transform, opacity;
   z-index: 30;
 }
 
@@ -64,52 +65,42 @@
   height: auto;
 }
 
-/* Colour ghosts behind the portrait: --fx (0..1) is the eased, smoothed scroll progress set from the component. */
-.hero-thermal-defs {
-  position: absolute;
-  pointer-events: none;
-}
-
 .hero-portrait-stack {
   position: relative;
   flex: none;
   isolation: isolate;
 }
 
-.hero-portrait-fx {
+/* Colour-split echoes trailing behind the portrait. They are pre-tinted, pre-blurred images
+   (6% padding on every side for the blur), so scrolling only changes opacity and transform and
+   stays on the compositor. --fx (0..1) is the eased scroll progress set from the component. */
+.hero-ghost {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+  inset: -6%;
+  z-index: -1;
+  width: 112%;
+  max-width: none;
+  height: 112%;
   pointer-events: none;
   user-select: none;
+  opacity: calc(var(--fx, 0) * var(--ghost-alpha));
+  transform: translate3d(calc(var(--ghost-shift) * var(--fx, 0)), 0, 0);
   will-change: opacity, transform;
 }
 
-/* Colour-split echoes trailing behind the portrait; each drifts further out as --fx grows. */
-.hero-ghost {
-  z-index: -1;
-  opacity: calc(var(--fx, 0) * var(--ghost-alpha));
-  transform: translate3d(calc(var(--ghost-shift) * var(--fx, 0)), 0, 0);
-}
-
 .hero-ghost-yellow {
-  --ghost-shift: -9.5%;
+  --ghost-shift: -8.5%;
   --ghost-alpha: 0.5;
-  filter: url(#hero-ghost-yellow) blur(12px);
 }
 
 .hero-ghost-orange {
-  --ghost-shift: -8%;
+  --ghost-shift: -7.1%;
   --ghost-alpha: 0.85;
-  filter: url(#hero-ghost-orange) blur(5px);
 }
 
 .hero-ghost-red {
-  --ghost-shift: -3.5%;
+  --ghost-shift: -3.1%;
   --ghost-alpha: 0.95;
-  filter: url(#hero-ghost-red) blur(1.5px);
 }
 
 .hero-intro-panel {
@@ -182,10 +173,6 @@
 }
 
 @media (min-width: 1024px) {
-  .hero-pinned {
-    --name-end: 45%;
-  }
-
   /* Above ~700px of height (full-screen browser) the title drops further so it keeps sitting
      across the portrait's chest instead of floating up towards the navbar. */
   .hero-display {
@@ -244,46 +231,61 @@
 
   .hero-pinned {
     --name-start: 12%;
-    --name-end: 40%;
+    /* Portrait size and its gap from the bottom, shared so the title can be placed against it. */
+    --portrait-h: min(62svh, 132vw);
+    --portrait-gap: clamp(4.5rem, 10svh, 5.75rem);
   }
 
+  /* Anchored from the bottom so DESIGNER always runs across the portrait's chest, as on desktop,
+     whatever the phone's height. */
   .hero-display {
-    padding-top: clamp(1rem, 4svh, 2.5rem);
+    /* Bleeds past the container padding so the title can run almost edge to edge. */
+    right: -1rem;
+    left: -1rem;
+    justify-content: flex-end;
+    padding-top: 0;
+    padding-bottom: calc(var(--portrait-gap) + var(--portrait-h) * 0.52);
   }
 
   .hero-uiux {
-    gap: 5vw;
-    font-size: min(29vw, 21svh);
+    gap: 4vw;
+    font-size: min(33vw, 23svh);
   }
 
   .hero-designer {
     margin-top: -0.04em;
-    font-size: min(19.5vw, 14svh);
+    font-size: min(20.8vw, 15svh);
   }
 
   .hero-portrait-wrap {
     align-items: flex-end;
     padding-top: 0;
-    padding-bottom: clamp(4.5rem, 10svh, 5.75rem);
+    padding-bottom: var(--portrait-gap);
+  }
+
+  /* The torso sits left of the photo's centre, so the photo is nudged right to centre the body. */
+  .hero-portrait-stack {
+    transform: translateX(6.5%);
+  }
+
+  /* Warm aura behind the title and portrait so the figure stands out from the black. */
+  .hero-pinned::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 58% 34% at 52% 50%, rgba(247, 198, 47, 0.2), transparent 70%),
+      radial-gradient(ellipse 95% 52% at 50% 58%, rgba(255, 140, 66, 0.1), transparent 72%);
+    pointer-events: none;
   }
 
   .hero-portrait {
     width: auto;
     max-width: none;
-    height: min(62svh, 132vw);
+    height: var(--portrait-h);
+    filter: drop-shadow(0 0 26px rgba(247, 198, 47, 0.22))
+      drop-shadow(0 26px 44px rgba(0, 0, 0, 0.6));
     max-height: none;
-  }
-
-  .hero-ghost-yellow {
-    filter: url(#hero-ghost-yellow) blur(7px);
-  }
-
-  .hero-ghost-orange {
-    filter: url(#hero-ghost-orange) blur(3px);
-  }
-
-  .hero-ghost-red {
-    filter: url(#hero-ghost-red) blur(1px);
   }
 
   .hero-intro-panel {

@@ -3,27 +3,11 @@
     <div class="hero-pinned">
       <div class="absolute inset-x-0 top-0 h-px bg-white/10 z-40"></div>
 
-      <!-- Flat warm tints for the ghost copies that trail out behind the portrait. -->
-      <svg class="hero-thermal-defs" width="0" height="0" aria-hidden="true" focusable="false">
-        <defs>
-          <filter id="hero-ghost-yellow" color-interpolation-filters="sRGB">
-            <feColorMatrix type="matrix" values="0 0 0 0 1  0.2 0.3 0.1 0 0.78  0 0 0 0 0.05  0 0 0 1 0" />
-          </filter>
-          <filter id="hero-ghost-orange" color-interpolation-filters="sRGB">
-            <feColorMatrix type="matrix" values="0 0 0 0 1  0.3 0.5 0.1 0 0.45  0 0 0 0 0  0 0 0 1 0" />
-          </filter>
-          <filter id="hero-ghost-red" color-interpolation-filters="sRGB">
-            <feColorMatrix type="matrix" values="0 0 0 0 1  0.3 0.4 0.1 0 0.12  0 0 0 0 0.2  0 0 0 1 0" />
-          </filter>
-        </defs>
-      </svg>
-
       <div class="relative mx-auto w-full h-full max-w-[1600px] px-4 sm:px-8">
         <div class="relative h-full flex items-center justify-center">
 
           <div
             class="hero-display pointer-events-none absolute inset-0 flex flex-col items-center justify-center select-none z-[5]"
-            [style.--p]="scrollProgress()"
             aria-hidden="true"
           >
             <div
@@ -51,8 +35,6 @@
 
           <div
             class="hpone-name"
-            [style.--p]="scrollProgress()"
-            [style.--name-end]="nameEnd()"
             aria-hidden="true"
           >
             <img
@@ -65,9 +47,9 @@
 
           <div class="hero-portrait-wrap relative z-20 flex items-end justify-center w-full h-full pt-10 pb-20">
             <div class="hero-portrait-stack">
-              <img src="photo/my%20photo.png" alt="" class="hero-portrait-fx hero-ghost hero-ghost-yellow" aria-hidden="true" />
-              <img src="photo/my%20photo.png" alt="" class="hero-portrait-fx hero-ghost hero-ghost-orange" aria-hidden="true" />
-              <img src="photo/my%20photo.png" alt="" class="hero-portrait-fx hero-ghost hero-ghost-red" aria-hidden="true" />
+              <img src="photo/portrait-ghost-yellow.webp" alt="" class="hero-ghost hero-ghost-yellow" aria-hidden="true" />
+              <img src="photo/portrait-ghost-orange.webp" alt="" class="hero-ghost hero-ghost-orange" aria-hidden="true" />
+              <img src="photo/portrait-ghost-red.webp" alt="" class="hero-ghost hero-ghost-red" aria-hidden="true" />
               <img
                 src="photo/my%20photo.png"
                 alt="Portrait"

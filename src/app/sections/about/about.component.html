@@ -29,34 +29,19 @@
 
       <div class="about-right">
         <ol class="about-list">
-          <li class="about-list-item">
-            <span class="about-number">01</span>
-            <div>
-              <h3>UX Research</h3>
-              <p>User research, interviews, usability testing and analysis</p>
-            </div>
-          </li>
-          <li class="about-list-item">
-            <span class="about-number">02</span>
-            <div>
-              <h3>Visual Design</h3>
-              <p>UI design, design systems, brand identity</p>
-            </div>
-          </li>
-          <li class="about-list-item">
-            <span class="about-number">03</span>
-            <div>
-              <h3>Prototyping</h3>
-              <p>Interactive prototypes and micro-interaction design</p>
-            </div>
-          </li>
-          <li class="about-list-item">
-            <span class="about-number">04</span>
-            <div>
-              <h3>Handoff</h3>
-              <p>Developer-ready specs, documentation, QA</p>
-            </div>
-          </li>
+          @for (item of listItems; track item.number) {
+            <li class="about-list-item">
+              <span class="about-number">{{ item.number }}</span>
+              <div>
+                <h3 [attr.aria-label]="item.title">
+                  @for (char of item.chars; track $index) {
+                    <span class="about-char" [style.--i]="$index" aria-hidden="true">{{ char }}</span>
+                  }
+                </h3>
+                <p>{{ item.text }}</p>
+              </div>
+            </li>
+          }
         </ol>
 
         <div class="about-bio">
