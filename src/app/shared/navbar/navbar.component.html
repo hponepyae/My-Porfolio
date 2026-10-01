@@ -1,9 +1,11 @@
 <header
   class="sticky top-0 z-50 border-b border-transparent transition-all duration-300"
   [ngClass]="
-    isScrolled()
-      ? 'border-white/10 bg-ink-950/75 backdrop-blur'
-      : 'bg-transparent'
+    isOpen()
+      ? 'border-white/10 bg-ink-950/95 backdrop-blur'
+      : isScrolled()
+        ? 'border-white/10 bg-ink-950/75 backdrop-blur'
+        : 'bg-transparent'
   "
 >
   <div class="container-shell">
@@ -28,10 +30,12 @@
       </div>
 
       <button
-        class="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-md border border-white/10 bg-white/5 text-white/90 transition hover:bg-white/10"
+        class="md:hidden inline-flex h-11 w-11 items-center justify-center rounded-md border border-white/10 bg-white/5 text-white/90 transition hover:bg-white/10"
         type="button"
         (click)="toggle()"
         aria-label="Toggle menu"
+        aria-controls="mobile-menu"
+        [attr.aria-expanded]="isOpen()"
       >
         <svg
           class="h-5 w-5"
@@ -40,7 +44,7 @@
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
-            d="M4 7H20M4 12H20M4 17H20"
+            [attr.d]="isOpen() ? 'M6 6L18 18M18 6L6 18' : 'M4 7H20M4 12H20M4 17H20'"
             stroke="currentColor"
             stroke-width="2"
             stroke-linecap="round"
@@ -50,23 +54,22 @@
     </div>
   </div>
 
+  <!-- Overlays the page instead of pushing it down, so opening the menu never shifts the layout. -->
   <div
-    class="md:hidden overflow-hidden border-t border-white/10 bg-ink-950/85 backdrop-blur transition-all duration-300"
-    [ngClass]="isOpen() ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'"
+    id="mobile-menu"
+    class="md:hidden absolute inset-x-0 top-full overflow-hidden border-b border-white/10 bg-ink-950/95 backdrop-blur transition-all duration-300"
+    [ngClass]="isOpen() ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0 pointer-events-none border-transparent'"
   >
-    <div class="container-shell py-4">
-      <div class="flex flex-col gap-3">
-        <a class="nav-link w-fit" href="#home" (click)="close()">Home</a>
-        <a class="nav-link w-fit" href="#about" (click)="close()">About</a>
-        <a class="nav-link w-fit" href="#skills" (click)="close()">Skills</a>
-        <a class="nav-link w-fit" href="#contact" (click)="close()">Contact</a>
-        <div class="pt-2">
-          <a class="btn-gold-outline w-full" href="#contact" (click)="close()"
-            >Hire Me</a
-          >
-        </div>
-      </div>
+    <div class="container-shell pb-6 pt-2">
+      <nav class="flex flex-col divide-y divide-white/10">
+        <a class="mobile-nav-link" href="#home" (click)="close()">Home</a>
+        <a class="mobile-nav-link" href="#about" (click)="close()">About</a>
+        <a class="mobile-nav-link" href="#skills" (click)="close()">Skills</a>
+        <a class="mobile-nav-link" href="#contact" (click)="close()">Contact</a>
+      </nav>
+      <a class="btn-gold-outline mt-4 w-full py-3" href="#contact" (click)="close()"
+        >Hire Me</a
+      >
     </div>
   </div>
 </header>
-

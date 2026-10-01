@@ -8,9 +8,14 @@
     --gold-hand-cursor: url('/photo/coursor.svg');
   }
 
-  html,
-  body {
+  html {
     height: 100%;
+  }
+
+  /* min-height, not height: a fixed-height body would end the sticky navbar's range after one screen. */
+  body {
+    min-height: 100%;
+    overflow-x: clip;
   }
 
   html {
@@ -62,6 +67,10 @@
     @apply w-full;
   }
 
+  .mobile-nav-link {
+    @apply flex items-center justify-between py-4 text-sm font-display uppercase tracking-wide2 text-white/80 transition-colors hover:text-gold-500;
+  }
+
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition-all duration-300;
   }
@@ -79,6 +88,6 @@
   }
 
   .input {
-    @apply w-full rounded-lg border border-white/10 bg-ink-800/70 px-4 py-3 text-sm text-white placeholder:text-white/35 outline-none transition focus:border-gold-600/60 focus:ring-2 focus:ring-gold-600/20;
+    @apply w-full rounded-lg border border-white/10 bg-ink-800/70 px-4 py-3 text-base sm:text-sm text-white placeholder:text-white/35 outline-none transition focus:border-gold-600/60 focus:ring-2 focus:ring-gold-600/20;
   }
 }

@@ -64,6 +64,54 @@
   height: auto;
 }
 
+/* Colour ghosts behind the portrait: --fx (0..1) is the eased, smoothed scroll progress set from the component. */
+.hero-thermal-defs {
+  position: absolute;
+  pointer-events: none;
+}
+
+.hero-portrait-stack {
+  position: relative;
+  flex: none;
+  isolation: isolate;
+}
+
+.hero-portrait-fx {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  will-change: opacity, transform;
+}
+
+/* Colour-split echoes trailing behind the portrait; each drifts further out as --fx grows. */
+.hero-ghost {
+  z-index: -1;
+  opacity: calc(var(--fx, 0) * var(--ghost-alpha));
+  transform: translate3d(calc(var(--ghost-shift) * var(--fx, 0)), 0, 0);
+}
+
+.hero-ghost-yellow {
+  --ghost-shift: -9.5%;
+  --ghost-alpha: 0.5;
+  filter: url(#hero-ghost-yellow) blur(12px);
+}
+
+.hero-ghost-orange {
+  --ghost-shift: -8%;
+  --ghost-alpha: 0.85;
+  filter: url(#hero-ghost-orange) blur(5px);
+}
+
+.hero-ghost-red {
+  --ghost-shift: -3.5%;
+  --ghost-alpha: 0.95;
+  filter: url(#hero-ghost-red) blur(1.5px);
+}
+
 .hero-intro-panel {
   position: absolute;
   left: clamp(1rem, 2.75vw, 2rem);
@@ -138,8 +186,10 @@
     --name-end: 45%;
   }
 
+  /* Above ~700px of height (full-screen browser) the title drops further so it keeps sitting
+     across the portrait's chest instead of floating up towards the navbar. */
   .hero-display {
-    padding-top: clamp(6.25rem, 12vh, 8.75rem);
+    padding-top: calc(clamp(6.25rem, 12vh, 8.75rem) + max(0px, (100vh - 700px) * 0.55));
   }
 
   .hero-intro-panel {
@@ -147,51 +197,205 @@
   }
 }
 
-@media (max-width: 640px) {
+/* Tablets and phones: the pinned area sits below the sticky navbar so the whole hero fits the first
+   screen, and the intro panel gets a fade behind it that the portrait's legs sink into. */
+@media (max-width: 1023px) {
+  .hero-pinned {
+    --hero-nav: 66px;
+    top: var(--hero-nav);
+    height: calc(100svh - var(--hero-nav));
+  }
+
+  .hero-intro-panel::before {
+    content: '';
+    position: absolute;
+    inset: -6rem -4rem -3rem;
+    z-index: -1;
+    background: linear-gradient(to top, #050505 0%, #050505 58%, rgba(5, 5, 5, 0) 100%);
+    pointer-events: none;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .hero-portrait-wrap {
+    padding-bottom: 6rem;
+  }
+
+  .hero-portrait {
+    max-height: 74svh;
+  }
+
+  .hero-intro-panel {
+    bottom: 2rem;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto;
+    gap: 1.5rem;
+  }
+
+  .hero-intro-link {
+    min-width: 9rem;
+  }
+}
+
+/* Phones: type scales with the viewport width and the intro panel stacks into two rows. */
+@media (max-width: 639px) {
   .hero-track {
     height: 200svh;
   }
 
   .hero-pinned {
-    height: calc(100svh - 4rem);
-    --name-start: 8%;
+    --name-start: 12%;
     --name-end: 40%;
   }
 
   .hero-display {
-    padding-top: clamp(5.75rem, 22svh, 7.5rem);
+    padding-top: clamp(1rem, 4svh, 2.5rem);
+  }
+
+  .hero-uiux {
+    gap: 5vw;
+    font-size: min(29vw, 21svh);
+  }
+
+  .hero-designer {
+    margin-top: -0.04em;
+    font-size: min(19.5vw, 14svh);
   }
 
   .hero-portrait-wrap {
-    align-items: flex-start;
-    padding-top: clamp(7.5rem, 28svh, 10rem);
-    padding-bottom: 0;
+    align-items: flex-end;
+    padding-top: 0;
+    padding-bottom: clamp(4.5rem, 10svh, 5.75rem);
   }
 
   .hero-portrait {
-    width: min(105vw, 360px);
+    width: auto;
     max-width: none;
-    max-height: calc(100svh - 6rem);
+    height: min(62svh, 132vw);
+    max-height: none;
+  }
+
+  .hero-ghost-yellow {
+    filter: url(#hero-ghost-yellow) blur(7px);
+  }
+
+  .hero-ghost-orange {
+    filter: url(#hero-ghost-orange) blur(3px);
+  }
+
+  .hero-ghost-red {
+    filter: url(#hero-ghost-red) blur(1px);
   }
 
   .hero-intro-panel {
-    bottom: 1rem;
-    grid-template-columns: 1fr;
-    gap: 0.95rem;
+    left: 0.25rem;
+    right: 0.25rem;
+    bottom: max(1.25rem, env(safe-area-inset-bottom));
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.85rem 1rem;
     padding-top: 1rem;
+    border-top-color: rgba(255, 255, 255, 0.16);
+  }
+
+  .hero-intro-panel::before {
+    inset: -5.5rem -1.25rem -1.5rem;
   }
 
   .hero-intro-role {
-    margin-bottom: 0.35rem;
+    margin-bottom: 0.4rem;
+    font-size: 0.62rem;
     letter-spacing: 0.28em;
   }
 
+  .hero-intro-name {
+    font-size: 1rem;
+  }
+
   .hero-intro-copy {
+    grid-row: 2;
+    grid-column: 1 / -1;
     max-width: 26rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.84rem;
+    line-height: 1.5;
   }
 
   .hero-intro-link {
+    grid-row: 1;
+    grid-column: 2;
+    min-width: 0;
+    min-height: 2.75rem;
+    padding: 0.7rem 1.1rem;
+    font-size: 0.68rem;
+    letter-spacing: 0.24em;
+  }
+}
+
+/* Very narrow phones: stack the call to action under the name instead of squeezing it beside. */
+@media (max-width: 359px) {
+  .hero-intro-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-intro-copy {
+    grid-row: 3;
+  }
+
+  .hero-intro-link {
+    grid-row: 2;
+    grid-column: 1;
     width: 100%;
-    min-height: 2.9rem;
+  }
+}
+
+/* Landscape phones: very little height, so everything is sized from it rather than from the width. */
+@media (max-width: 1023px) and (max-height: 520px) {
+  .hero-display {
+    padding-top: 0.5rem;
+  }
+
+  .hero-uiux {
+    gap: 6svh;
+    font-size: 34svh;
+  }
+
+  .hero-designer {
+    margin-top: -0.04em;
+    font-size: 28svh;
+  }
+
+  .hero-portrait-wrap {
+    padding-top: 0;
+    padding-bottom: 3.25rem;
+  }
+
+  .hero-portrait {
+    width: auto;
+    height: auto;
+    max-height: calc(100svh - 8rem);
+  }
+
+  .hero-intro-panel {
+    bottom: 0.75rem;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto;
+    gap: 1.25rem;
+    padding-top: 0.7rem;
+  }
+
+  .hero-intro-panel::before {
+    inset: -3rem -4rem -3rem;
+  }
+
+  .hero-intro-copy {
+    grid-row: auto;
+    grid-column: auto;
+    font-size: 0.76rem;
+  }
+
+  .hero-intro-link {
+    grid-row: auto;
+    grid-column: auto;
+    width: auto;
+    min-height: 2.4rem;
   }
 }

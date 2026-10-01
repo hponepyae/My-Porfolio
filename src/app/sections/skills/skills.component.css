@@ -238,11 +238,11 @@
   }
 
   .skills-heading-line {
-    font-size: clamp(2rem, 8.1vw, 3rem);
+    font-size: clamp(2.2rem, 11.5vw, 3.6rem);
   }
 
   .skills-heading-line--compact {
-    font-size: clamp(1.46rem, 6.7vw, 2.25rem);
+    font-size: clamp(1.25rem, 6.3vw, 2.4rem);
   }
 
   .skills-description {
@@ -259,14 +259,14 @@
   }
 
   .skill-pill {
-    padding: 0.68rem 1.12rem;
-    font-size: 0.68rem;
+    padding: 0.72rem 1.15rem;
+    font-size: 0.74rem;
   }
 
   .skill-pill--wide {
-    padding-right: 1.16rem;
-    padding-left: 1.16rem;
-    font-size: 0.64rem;
+    padding-right: 1.2rem;
+    padding-left: 1.2rem;
+    font-size: 0.7rem;
   }
 
   .skill-pill-slot--ui {
@@ -301,25 +301,17 @@
 }
 
 @media (max-width: 439px) {
-  .skills-heading-line {
-    font-size: 2.05rem;
-  }
-
-  .skills-heading-line--compact {
-    font-size: 1.42rem;
-  }
-
   .skills-description {
-    font-size: 0.88rem;
+    font-size: 0.9rem;
   }
 
   .skill-pill {
-    padding: 0.58rem 0.95rem;
-    font-size: 0.62rem;
+    padding: 0.64rem 1rem;
+    font-size: 0.68rem;
   }
 
   .skill-pill--wide {
-    font-size: 0.56rem;
+    font-size: 0.64rem;
   }
 
   .skill-pill-slot--ui {
@@ -336,6 +328,78 @@
 
   .skill-pill-slot--wireframing {
     --x: 3.75rem;
+  }
+}
+
+/* Landscape phones: the pinned stage is only one short screen tall, so it is packed tightly. */
+@media (max-height: 520px) {
+  .skills-stage {
+    justify-content: flex-start;
+    padding-top: 4.75rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .skills-label {
+    gap: 0.55rem;
+  }
+
+  .skills-heading-line {
+    font-size: 10svh;
+  }
+
+  .skills-heading-line--compact {
+    font-size: 8.5svh;
+  }
+
+  .skills-description {
+    display: none;
+  }
+
+  .skills-pile {
+    margin-top: 1.5rem;
+  }
+
+  .skills-drop-zone {
+    height: 9.5rem;
+  }
+
+  .skill-pill-slot {
+    top: 22%;
+  }
+
+  .skill-pill {
+    padding: 0.55rem 1rem;
+    font-size: 0.7rem;
+  }
+
+  .skill-pill-slot--ui {
+    --x: -9rem;
+    --y: 1.3rem;
+  }
+
+  .skill-pill-slot--visual {
+    --x: 9.6rem;
+    --y: 1.9rem;
+  }
+
+  .skill-pill-slot--prototype {
+    --x: -1rem;
+    --y: 3.2rem;
+  }
+
+  .skill-pill-slot--editing {
+    --x: -8rem;
+    --y: 4.7rem;
+  }
+
+  .skill-pill-slot--wireframing {
+    --x: 6.6rem;
+    --y: 4.8rem;
+  }
+
+  .skill-pill-slot--interaction {
+    --x: 0.3rem;
+    --y: 0.1rem;
   }
 }
 

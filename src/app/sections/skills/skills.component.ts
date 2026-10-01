@@ -143,7 +143,8 @@ export class SkillsComponent implements AfterViewInit, OnDestroy {
       scrollTrigger: {
         trigger: section,
         start: 'top top',
-        end: '+=6400',
+        // Phones get a shorter pin so the section doesn't take a dozen swipes to get through.
+        end: () => (window.innerWidth < 768 ? '+=3400' : '+=6400'),
         pin: true,
         scrub: 1.05,
         anticipatePin: 1,

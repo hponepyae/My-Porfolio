@@ -34,7 +34,7 @@ export class AboutComponent implements AfterViewInit, OnDestroy {
           this.sectionObserver?.disconnect();
         }
       },
-      { threshold: 0.24 },
+      { threshold: this.revealThreshold() },
     );
 
     this.sectionObserver.observe(this.elementRef.nativeElement);
@@ -69,6 +69,13 @@ export class AboutComponent implements AfterViewInit, OnDestroy {
     if (this.animationFrame) {
       cancelAnimationFrame(this.animationFrame);
     }
+  }
+
+  // When the section is much taller than the screen (stacked phone layout, landscape phones) a 24%
+  // visible share can never be reached, so ask for no more than a third of a screen instead.
+  private revealThreshold(): number {
+    const height = this.elementRef.nativeElement.offsetHeight || window.innerHeight;
+    return Math.min(0.24, (window.innerHeight / height) * 0.33);
   }
 
   private showSection(): void {
