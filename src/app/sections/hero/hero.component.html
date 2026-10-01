@@ -6,6 +6,8 @@
   role="dialog"
   aria-modal="true"
   aria-label="Portfolio entrance"
+  (pointerdown)="onEntrancePointerDown()"
+  (touchstart)="onEntranceTouchStart()"
 >
   <div class="character-entrance-stage">
     <svg
@@ -79,16 +81,6 @@
       <span class="desktop-bulb-instruction">click the bulb</span>
       <span class="mobile-bulb-instruction">touch the bulb</span>
     </p>
-    <button
-      type="button"
-      class="motion-permission"
-      [class.is-visible]="motionPermissionVisible"
-      [attr.aria-hidden]="!motionPermissionVisible"
-      [disabled]="!motionPermissionVisible"
-      (click)="onMotionPermissionClick()"
-    >
-      enable motion
-    </button>
     <p
       class="motion-feedback"
       [class.is-visible]="motionFeedback"

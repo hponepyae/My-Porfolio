@@ -35,7 +35,6 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   entranceVisible = true;
   entranceExiting = false;
   bulbReady = false;
-  motionPermissionVisible = false;
   motionFeedback = '';
   blackoutActive = false;
 
@@ -58,6 +57,8 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   private entranceListenersAttached = false;
   private isGyroActive = false;
   private motionPermissionRequestPending = false;
+  private pendingPortfolioActivation = false;
+  private gyroBaseline: { beta: number; gamma: number } | null = null;
   private targetX = 0;
   private targetY = 0;
   private currentX = 0;
@@ -86,6 +87,7 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     this.onWindowResize();
     this.zone.runOutsideAngular(() => {
       this.startEntranceLoading();
+      this.initializeGyroIfPermissionless();
       void this.loadCharacter();
     });
   }
@@ -256,9 +258,17 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     this.host.nativeElement.querySelector('.bulb-instruction')?.classList.add('is-visible');
     this.zone.run(() => {
       this.bulbReady = true;
-      this.motionPermissionVisible = this.motionPermissionIsRequired() || this.isTouchDevice();
     });
   };
+
+  private initializeGyroIfPermissionless() {
+    const orientationConstructor = window.DeviceOrientationEvent as unknown as {
+      requestPermission?: () => Promise<'granted' | 'denied'>;
+    };
+    if (typeof orientationConstructor?.requestPermission !== 'function') {
+      this.enableGyro();
+    }
+  }
 
   private readonly requestMotionPermission = () => {
     if (this.isGyroActive || this.motionPermissionRequestPending) return;
@@ -277,17 +287,20 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
           if (permissionState === 'granted') {
             this.enableGyro('Motion enabled successfully.');
           } else {
-            this.showMotionFeedback('Permission denied. Allow Motion access in Safari Settings.', true);
+            this.showMotionFeedback('Permission denied. Allow Motion access in Safari Settings.');
           }
+          this.flushPendingPortfolioActivation();
         }).catch((error: unknown) => {
           this.motionPermissionRequestPending = false;
           console.error(error);
-          this.showMotionFeedback('Motion error. Please check browser permissions and try again.', true);
+          this.showMotionFeedback('Motion error. Please check browser permissions and try again.');
+          this.flushPendingPortfolioActivation();
         });
       } catch (error) {
         this.motionPermissionRequestPending = false;
         console.error(error);
-        this.showMotionFeedback('Motion error. Please check browser permissions and try again.', true);
+        this.showMotionFeedback('Motion error. Please check browser permissions and try again.');
+        this.flushPendingPortfolioActivation();
       }
       return;
     }
@@ -300,35 +313,28 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     this.showMotionFeedback('Gyroscope is not supported on this browser/device.');
   };
 
-  private enableGyro(message: string) {
+  private enableGyro(message = '') {
     if (!this.isGyroActive) {
       window.addEventListener('deviceorientation', this.handleGyroMove, true);
+      window.addEventListener('deviceorientationabsolute', this.handleGyroMove, true);
       this.isGyroActive = true;
     }
-    this.motionPermissionVisible = false;
-    this.showMotionFeedback(message);
+    this.gyroBaseline = null;
+    if (message) this.showMotionFeedback(message);
   }
 
-  private showMotionFeedback(message: string, showPermissionButton = false) {
+  private showMotionFeedback(message: string) {
     this.zone.run(() => {
       this.motionFeedback = message;
-      if (showPermissionButton) this.motionPermissionVisible = true;
     });
   }
 
-  onMotionPermissionClick() {
+  onEntrancePointerDown() {
     this.requestMotionPermission();
   }
 
-  private motionPermissionIsRequired() {
-    const orientationConstructor = window.DeviceOrientationEvent as unknown as {
-      requestPermission?: () => Promise<'granted' | 'denied'>;
-    };
-    return typeof orientationConstructor?.requestPermission === 'function';
-  }
-
-  private isTouchDevice() {
-    return window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
+  onEntranceTouchStart() {
+    this.requestMotionPermission();
   }
 
   private readonly handleMouseMove = (event: MouseEvent) => {
@@ -345,10 +351,17 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   private readonly handleGyroMove = (event: DeviceOrientationEvent) => {
     if (event.gamma === null || event.beta === null) return;
 
-    const gamma = this.clamp(event.gamma, -30, 30);
-    const beta = this.clamp(event.beta, 10, 70);
-    this.targetX = gamma / 30;
-    this.targetY = (beta - 40) / 30;
+    if (!this.gyroBaseline) {
+      this.gyroBaseline = { beta: event.beta, gamma: event.gamma };
+      this.targetX = 0;
+      this.targetY = 0;
+      return;
+    }
+
+    const gammaDelta = this.clamp(event.gamma - this.gyroBaseline.gamma, -22, 22);
+    const betaDelta = this.clamp(event.beta - this.gyroBaseline.beta, -22, 22);
+    this.targetX = gammaDelta / 22;
+    this.targetY = betaDelta / 22;
   };
 
   private readonly resetEntranceTarget = () => {
@@ -370,7 +383,7 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
       : 1 / 60;
     this.lastEntranceFrame = timestamp;
 
-    const interpolation = this.reduceMotion ? 1 : 0.1;
+    const interpolation = this.reduceMotion ? 1 : 1 - Math.exp(-18 * deltaTime);
     this.currentX += (this.targetX - this.currentX) * interpolation;
     this.currentY += (this.targetY - this.currentY) * interpolation;
 
@@ -398,24 +411,40 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   private readonly activateFromPointer = (event: PointerEvent) => {
     event.preventDefault();
     event.stopPropagation();
-    this.enterPortfolio();
+    this.activatePortfolio();
   };
 
   private readonly activateFromKeyboard = (event: KeyboardEvent) => {
     if (event.key !== 'Enter' && event.key !== ' ') return;
 
     event.preventDefault();
-    this.enterPortfolio();
+    this.activatePortfolio();
   };
 
   onBulbActivate() {
-    this.enterPortfolio();
+    this.activatePortfolio();
   }
 
   onBulbKeydown(event: KeyboardEvent) {
     if (event.key !== 'Enter' && event.key !== ' ') return;
 
     event.preventDefault();
+    this.activatePortfolio();
+  }
+
+  private activatePortfolio() {
+    if (this.motionPermissionRequestPending) {
+      this.pendingPortfolioActivation = true;
+      return;
+    }
+
+    this.enterPortfolio();
+  }
+
+  private flushPendingPortfolioActivation() {
+    if (!this.pendingPortfolioActivation) return;
+
+    this.pendingPortfolioActivation = false;
     this.enterPortfolio();
   }
 
@@ -577,9 +606,11 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     }
     if (this.isGyroActive) {
       window.removeEventListener('deviceorientation', this.handleGyroMove, true);
+      window.removeEventListener('deviceorientationabsolute', this.handleGyroMove, true);
       this.isGyroActive = false;
     }
     this.motionPermissionRequestPending = false;
+    this.pendingPortfolioActivation = false;
     this.headHitArea?.removeEventListener('pointerup', this.activateFromPointer);
     this.characterSvg?.removeEventListener('keydown', this.activateFromKeyboard);
     this.characterMount?.nativeElement.replaceChildren();
