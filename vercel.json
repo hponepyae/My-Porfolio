@@ -5,7 +5,7 @@
       "headers": [
         {
           "key": "Permissions-Policy",
-          "value": "accelerometer=(self), gyroscope=(self), magnetometer=(self)"
+          "value": "accelerometer=*, gyroscope=*, magnetometer=*"
         }
       ]
     }

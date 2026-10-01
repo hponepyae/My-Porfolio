@@ -265,7 +265,9 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     this.host.nativeElement.querySelector('.bulb-instruction')?.classList.add('is-visible');
     this.zone.run(() => {
       this.bulbReady = true;
-      this.motionPermissionVisible = this.motionPermissionIsRequired();
+      this.motionPermissionVisible = this.motionPermissionIsRequired() || (
+        this.isTouchDevice() && !this.orientationDataActive
+      );
     });
   };
 
@@ -382,6 +384,10 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     );
   }
 
+  private isTouchDevice() {
+    return window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
+  }
+
   private readonly handleTouchStart = () => {
     void this.requestOrientationPermission();
   };
@@ -389,9 +395,15 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   private readonly handleOrientation = (event: DeviceOrientationEvent) => {
     if (this.entranceExiting || event.beta === null || event.gamma === null) return;
 
+    const firstSensorEvent = this.sensorSource === null;
     this.orientationDataActive = true;
     this.orientationSensorWaiting = false;
     this.sensorSource = 'orientation';
+    if (firstSensorEvent) {
+      this.zone.run(() => {
+        this.motionPermissionVisible = false;
+      });
+    }
     if (this.orientationFallbackTimer !== null) {
       window.clearTimeout(this.orientationFallbackTimer);
       this.orientationFallbackTimer = null;
@@ -414,9 +426,15 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     const gravity = event.accelerationIncludingGravity;
     if (!gravity || gravity.x === null || gravity.y === null) return;
 
+    const firstSensorEvent = this.sensorSource === null;
     this.orientationDataActive = true;
     this.orientationSensorWaiting = false;
     this.sensorSource = 'motion';
+    if (firstSensorEvent) {
+      this.zone.run(() => {
+        this.motionPermissionVisible = false;
+      });
+    }
     if (!this.motionBaseline) {
       this.motionBaseline = { x: gravity.x, y: gravity.y };
       this.entranceTarget = { x: 0, y: 0, active: true };
