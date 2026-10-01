@@ -59,6 +59,10 @@
   transform: rotate(-0.8deg);
 }
 
+.skills-heading-line:nth-child(3) .skills-brush {
+  transform: none;
+}
+
 .skills-brush__stroke {
   fill: var(--brush-color);
   shape-rendering: geometricPrecision;

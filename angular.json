@@ -23,6 +23,11 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "character.svg",
+                "input": "public/character-entrance-package",
+                "output": "character-entrance"
               }
             ],
             "styles": [

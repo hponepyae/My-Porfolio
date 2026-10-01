@@ -47,7 +47,7 @@ export class SkillsComponent implements AfterViewInit, OnDestroy {
   private motionDisabled = false;
 
   // Marker strokes in the brush SVG's 400x28 viewBox: rounded start, tapering to a point on the right.
-  // Lines alternate between a stroke that rises to the right and a gentler one that dips.
+  // The final Digital Experiences underline stays level so its right edge does not climb.
   readonly brushStrokes = {
     up: {
       shape:
@@ -61,7 +61,18 @@ export class SkillsComponent implements AfterViewInit, OnDestroy {
         'C 150 16.8, 70 14.6, 13 13.6 C 3 13.8, 1.5 5.4, 8 4.65 Z',
       reveal: 'M-30 8 C 100 11, 250 14, 430 19',
     },
+    flat: {
+      shape:
+        'M8 9 C 90 8.4, 185 8.3, 280 8.7 C 330 8.9, 370 9, 397 9 ' +
+        'C 370 14.5, 330 14.8, 280 14.7 C 185 14.5, 90 14.5, 13 15 C 3 15.2, 1.5 9.7, 8 9 Z',
+      reveal: 'M-30 10 C 100 9.5, 250 9.4, 430 9.5',
+    },
   };
+
+  getBrushStroke(lineIndex: number) {
+    if (lineIndex === 2) return this.brushStrokes.flat;
+    return lineIndex % 2 ? this.brushStrokes.down : this.brushStrokes.up;
+  }
 
   // Long lines are compact so they fit on one line on small screens.
   readonly headingLines: HeadingLine[] = [

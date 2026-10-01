@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Character Entrance Demo</title>
+  <link rel="stylesheet" href="character.css">
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: #f7f4ef;
+      color: #222;
+      overflow: hidden;
+    }
+    main { width: 100%; text-align: center; }
+    #home {
+      position: fixed;
+      inset: 0;
+      display: none;
+      place-items: center;
+      padding: 24px;
+      background: #101827;
+      color: white;
+      font: 600 clamp(30px, 7vw, 72px)/1.05 system-ui, sans-serif;
+    }
+    #home.show { display: grid; }
+    .hint {
+      margin-top: 18px;
+      font: 400 13px/1.5 system-ui, sans-serif;
+      opacity: .6;
+    }
+  </style>
+</head>
+<body>
+  <main id="entrance">
+    <div id="character-stage" data-home-url="">
+      <!-- For a real project, use your own SVG file directly. -->
+      <object id="character-svg" data="character.svg" type="image/svg+xml"
+              aria-label="Interactive character"></object>
+      <p id="loading-text">Move your mouse / phone and watch me look at you.<br>
+        Tap my head to enter<span id="loading-dots"></span></p>
+    </div>
+    <div class="hint">Desktop: move the cursor · Mobile: tilt or move the phone</div>
+  </main>
+
+  <section id="home">Welcome to Home Page ✨</section>
+
+  <script>
+    // The demo needs the SVG inline so JavaScript can access its internal elements.
+    // In a real app, either inline character.svg into the HTML or load it with fetch().
+    fetch("character.svg")
+      .then(r => r.text())
+      .then(svgText => {
+        const object = document.querySelector("#character-svg");
+        const svg = new DOMParser().parseFromString(svgText, "image/svg+xml").documentElement;
+        svg.setAttribute("id", "character-svg");
+        svg.removeAttribute("width");
+        svg.removeAttribute("height");
+        object.replaceWith(svg);
+
+        const s = document.createElement("script");
+        s.src = "character.js";
+        document.body.appendChild(s);
+      });
+
+    document.addEventListener("character:enter-home", () => {
+      document.querySelector("#entrance").style.display = "none";
+      document.querySelector("#home").classList.add("show");
+    });
+  </script>
+</body>
+</html>

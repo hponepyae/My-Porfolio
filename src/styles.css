@@ -91,3 +91,411 @@
     @apply w-full rounded-lg border border-white/10 bg-ink-800/70 px-4 py-3 text-base sm:text-sm text-white placeholder:text-white/35 outline-none transition focus:border-gold-600/60 focus:ring-2 focus:ring-gold-600/20;
   }
 }
+
+/* The SVG is fetched and inlined at runtime, so these selectors intentionally remain global. */
+.character-entrance {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #000;
+  color: #222;
+  opacity: 1;
+  transition: opacity 140ms ease-out;
+}
+
+.character-entrance::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  background: #000;
+  clip-path: circle(0% at 9% 11%);
+  transition: clip-path 280ms cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.character-entrance.is-blackening::after {
+  clip-path: circle(165% at 9% 11%);
+}
+
+.character-entrance[aria-hidden='true'] {
+  display: none;
+}
+
+.character-entrance.is-exiting {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.character-entrance-stage {
+  position: relative;
+  isolation: isolate;
+  width: min(520px, 86vw);
+  aspect-ratio: 850 / 778;
+  display: grid;
+  place-items: center;
+  touch-action: none;
+  user-select: none;
+  transform: translateY(0) scale(1);
+  animation: character-enter 1150ms cubic-bezier(0.2, 0.85, 0.25, 1) both;
+  transition: transform 680ms cubic-bezier(0.65, 0, 0.84, 0.22);
+}
+
+.character-entrance-stage::before {
+  display: none;
+}
+
+.character-entrance.is-exiting .character-entrance-stage {
+  transform: translateY(-4vh) scale(1.02);
+}
+
+.character-mount {
+  position: relative;
+  z-index: 1;
+  width: 88%;
+  height: 88%;
+  overflow: visible;
+  display: grid;
+  place-items: center;
+}
+
+.entrance-light-wash {
+  position: absolute;
+  top: -24%;
+  left: -24%;
+  z-index: 0;
+  width: 148%;
+  height: 148%;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at 10% 18%,
+    rgba(255, 235, 160, 0.44) 0,
+    rgba(255, 201, 60, 0.2) 24%,
+    transparent 58%
+  );
+  filter: blur(24px);
+  opacity: 0.7;
+  transition: opacity 500ms ease-out;
+}
+
+.character-entrance.is-blackening .entrance-light-wash {
+  opacity: 0;
+}
+
+.character-entrance.is-blackening .bulb-halo,
+.character-entrance.is-blackening .bulb-glass {
+  opacity: 0;
+  transition: opacity 280ms ease-out;
+}
+
+.entrance-bulb {
+  position: absolute;
+  top: -17%;
+  left: -5%;
+  z-index: 4;
+  width: clamp(4.8rem, 12vw, 7rem);
+  height: auto;
+  overflow: visible;
+  cursor: pointer;
+  filter: drop-shadow(0 0 8px rgba(255, 198, 32, 0.52));
+  transform-origin: 70px 0;
+  animation: bulb-sway 4.4s ease-in-out infinite;
+}
+
+.entrance-bulb:focus-visible {
+  outline: 3px solid #f2b705;
+  outline-offset: 6px;
+}
+
+.entrance-bulb:focus {
+  outline: none;
+}
+
+.entrance-bulb:focus-visible {
+  outline: 2px solid #f2b705;
+  outline-offset: 4px;
+}
+
+.entrance-bulb[aria-disabled='true'] {
+  cursor: default;
+}
+
+.bulb-cord {
+  fill: none;
+  stroke: #252525;
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.bulb-halo {
+  opacity: 0.72;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: bulb-glow 2.2s ease-in-out infinite;
+}
+
+.bulb-glass {
+  fill: url('#entranceBulbGlass');
+  stroke: #a86c18;
+  stroke-width: 2.5;
+}
+
+.bulb-highlight {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.92);
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+.bulb-filament {
+  fill: none;
+  stroke: #fff8c6;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 3px #fff0a0);
+}
+
+.bulb-neck {
+  fill: #ffe29a;
+  stroke: #a86c18;
+  stroke-width: 2;
+}
+
+.bulb-socket {
+  fill: url('#entranceBulbSocket');
+  stroke: #714111;
+  stroke-width: 2;
+}
+
+.bulb-thread {
+  fill: none;
+  stroke: #70400f;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.bulb-tip {
+  fill: #6d411a;
+  stroke: #3e2714;
+  stroke-width: 2;
+}
+
+.entrance-loader {
+  position: absolute;
+  left: 50%;
+  bottom: -3.8rem;
+  z-index: 4;
+  width: min(70%, 20rem);
+  transform: translateX(-50%);
+  opacity: 1;
+  transition: opacity 260ms ease, transform 260ms ease;
+}
+
+.entrance-loader.is-complete {
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 0.7rem);
+}
+
+.entrance-loader-track {
+  position: relative;
+  height: 0.85rem;
+  overflow: hidden;
+  border: 2px solid #222;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.1);
+}
+
+.entrance-loader-fill {
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: repeating-linear-gradient(
+    -45deg,
+    #f2b705 0,
+    #f2b705 0.7rem,
+    #ffd958 0.7rem,
+    #ffd958 1.4rem
+  );
+  transition: width 80ms linear;
+}
+
+.entrance-loader-dot {
+  position: absolute;
+  top: 50%;
+  left: 0.35rem;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: #fffdf0;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.9);
+  transform: translateY(-50%);
+}
+
+.bulb-instruction {
+  position: absolute;
+  left: 50%;
+  bottom: -6.7rem;
+  z-index: 4;
+  margin: 0;
+  color: #fff;
+  font: 700 0.75rem/1.2 'Inter', ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0.2em;
+  opacity: 0;
+  text-align: center;
+  text-transform: uppercase;
+  text-shadow: 0 0 12px rgba(255, 211, 88, 0.7), 0 0 28px rgba(255, 180, 20, 0.34);
+  transform: translate(-50%, 0.35rem);
+  transition: opacity 420ms ease, transform 420ms ease;
+}
+
+.bulb-instruction.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+  animation: bulb-instruction-blink 1.35s ease-in-out infinite;
+}
+
+.mobile-bulb-instruction {
+  display: none;
+}
+
+#characterSvg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  filter: drop-shadow(0 18px 22px rgba(0, 0, 0, 0.14));
+  -webkit-mask-image: linear-gradient(to bottom, #000 0 90%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0 90%, transparent 100%);
+  outline: none;
+}
+
+#characterSvg:focus-visible {
+  outline: 3px solid #b98505;
+  outline-offset: 8px;
+  border-radius: 12px;
+}
+
+#character {
+  transform-box: fill-box;
+  transform-origin: center;
+  will-change: transform;
+}
+
+#eyes circle {
+  will-change: transform;
+}
+
+/* The supplied artwork already contains pupils; enlarge this mask so the animated pupils
+   fully cover the raster pupils underneath instead of creating a doubled-eye effect. */
+#eyeWhites ellipse {
+  transform: none;
+}
+
+#headHitArea {
+  cursor: pointer;
+}
+
+#reactionMouth {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+#characterSvg.is-reacting #reactionMouth {
+  animation: reaction-mouth-open 260ms cubic-bezier(0.2, 0.85, 0.25, 1) both;
+}
+
+@keyframes character-enter {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.88);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.02);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes reaction-mouth-open {
+  0% { opacity: 0; transform: scaleY(0.28); }
+  55% { opacity: 1; transform: scaleY(1.04); }
+  100% { opacity: 1; transform: scaleY(1); }
+}
+
+@keyframes bulb-sway {
+  0%, 100% { transform: rotate(-1.8deg); }
+  50% { transform: rotate(2deg); }
+}
+
+@keyframes bulb-glow {
+  0%, 100% { opacity: 0.62; transform: scale(0.96); }
+  50% { opacity: 0.92; transform: scale(1.04); }
+}
+
+@keyframes bulb-instruction-blink {
+  0%, 100% { opacity: 0.38; }
+  50% { opacity: 1; }
+}
+
+@media (max-width: 640px) {
+  .character-entrance-stage {
+    width: min(380px, 82vw);
+  }
+
+  .character-mount {
+    width: 84%;
+    height: 84%;
+  }
+
+  .entrance-bulb {
+    top: -14%;
+    left: -3%;
+    width: clamp(4.4rem, 19vw, 5.8rem);
+  }
+
+  .bulb-instruction {
+    font-size: 0.66rem;
+    letter-spacing: 0.12em;
+  }
+
+  .desktop-bulb-instruction {
+    display: none;
+  }
+
+  .mobile-bulb-instruction {
+    display: inline;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .character-entrance,
+  .character-entrance-stage {
+    transition: none;
+    animation: none !important;
+  }
+
+  .character-entrance.is-exiting .character-entrance-stage {
+    transform: none;
+  }
+
+  .entrance-bulb,
+  .bulb-halo,
+  .bulb-instruction.is-visible,
+  #characterSvg.is-reacting #reactionMouth {
+    animation: none !important;
+  }
+
+  #characterSvg.is-reacting #reactionMouth {
+    opacity: 1;
+  }
+}

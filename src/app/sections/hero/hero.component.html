@@ -1,3 +1,88 @@
+<div
+  class="character-entrance"
+  [class.is-exiting]="entranceExiting"
+  [attr.aria-hidden]="!entranceVisible"
+  [class.is-blackening]="blackoutActive"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Portfolio entrance"
+  (pointerdown)="onEntrancePointerDown()"
+>
+  <div class="character-entrance-stage">
+    <svg
+      class="entrance-bulb"
+      viewBox="0 0 140 230"
+      role="button"
+      tabindex="0"
+      aria-label="Click the bulb to enter the portfolio"
+      [attr.aria-disabled]="!bulbReady"
+      [class.is-ready]="bulbReady"
+      (click)="onBulbActivate()"
+      (keydown)="onBulbKeydown($event)"
+    >
+      <defs>
+        <radialGradient id="entranceBulbGlow" cx="50%" cy="48%" r="54%">
+          <stop offset="0" stop-color="#fff9bd" stop-opacity="0.96" />
+          <stop offset="0.42" stop-color="#ffd84d" stop-opacity="0.35" />
+          <stop offset="1" stop-color="#ffd84d" stop-opacity="0" />
+        </radialGradient>
+        <linearGradient id="entranceBulbGlass" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#fffdf0" stop-opacity="0.96" />
+          <stop offset="0.38" stop-color="#ffe985" stop-opacity="0.95" />
+          <stop offset="1" stop-color="#f6a900" stop-opacity="0.9" />
+        </linearGradient>
+        <linearGradient id="entranceBulbSocket" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#9b5b16" />
+          <stop offset="0.48" stop-color="#ffe19a" />
+          <stop offset="1" stop-color="#9b5b16" />
+        </linearGradient>
+        <filter id="entranceBulbBlur" x="-80%" y="-80%" width="260%" height="260%">
+          <feGaussianBlur stdDeviation="4" />
+        </filter>
+      </defs>
+      <path class="bulb-cord" d="M70 0 C69 18 71 36 70 62" />
+      <circle class="bulb-halo" cx="70" cy="104" r="63" fill="url(#entranceBulbGlow)" filter="url(#entranceBulbBlur)" />
+      <g class="bulb-body" transform="rotate(180 70 115)">
+        <path
+          id="bulbGlass"
+          class="bulb-glass"
+          d="M70 62 C43 62 27 82 30 106 C32 125 45 132 48 146 L92 146 C95 132 108 125 110 106 C113 82 97 62 70 62 Z"
+        />
+        <path class="bulb-highlight" d="M48 81 C39 91 40 106 45 115" />
+        <path class="bulb-filament" d="M57 112 L64 99 L70 112 L76 99 L83 112 M64 99 V91 M76 99 V91" />
+        <path class="bulb-neck" d="M49 144 H91 V153 H49 Z" />
+        <path class="bulb-socket" d="M47 151 H93 V177 C86 183 54 183 47 177 Z" />
+        <path class="bulb-thread" d="M48 157 H92 M48 164 H92 M50 171 H90" />
+        <path class="bulb-tip" d="M58 178 C59 190 81 190 82 178" />
+      </g>
+    </svg>
+
+    <div #characterMount class="character-mount" aria-live="polite"></div>
+    <div class="entrance-light-wash" aria-hidden="true"></div>
+
+    <div
+      #loadingBar
+      class="entrance-loader"
+      [class.is-complete]="bulbReady"
+      role="progressbar"
+      aria-label="Loading portfolio entrance"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      aria-valuenow="0"
+    >
+      <div class="entrance-loader-track">
+        <div #loadingFill class="entrance-loader-fill"></div>
+        <span class="entrance-loader-dot"></span>
+      </div>
+    </div>
+
+    <p class="bulb-instruction" [class.is-visible]="bulbReady" aria-live="polite">
+      <span class="desktop-bulb-instruction">click the bulb</span>
+      <span class="mobile-bulb-instruction">touch the bulb</span>
+    </p>
+  </div>
+</div>
+
 <section id="home" class="hero-section">
   <div class="hero-track">
     <div class="hero-pinned">
