@@ -35,6 +35,7 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   entranceVisible = true;
   entranceExiting = false;
   bulbReady = false;
+  motionPermissionVisible = false;
   blackoutActive = false;
 
   private pinned: HTMLElement | null = null;
@@ -58,6 +59,8 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   private orientationDataActive = false;
   private orientationPermissionRequested = false;
   private orientationBaseline: { beta: number; gamma: number } | null = null;
+  private motionBaseline: { x: number; y: number } | null = null;
+  private sensorSource: 'orientation' | 'motion' | null = null;
   private orientationSensorWaiting = false;
   private orientationFallbackTimer: number | null = null;
   private entranceTarget = { x: 0, y: 0, active: false };
@@ -262,16 +265,25 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     this.host.nativeElement.querySelector('.bulb-instruction')?.classList.add('is-visible');
     this.zone.run(() => {
       this.bulbReady = true;
+      this.motionPermissionVisible = this.motionPermissionIsRequired();
     });
   };
 
   private attachOrientationListenerIfAvailable() {
-    if (typeof window.DeviceOrientationEvent === 'undefined') return;
+    const hasOrientation = typeof window.DeviceOrientationEvent !== 'undefined';
+    const hasMotion = typeof window.DeviceMotionEvent !== 'undefined';
+    if (!hasOrientation && !hasMotion) return;
 
     const orientationConstructor = window.DeviceOrientationEvent as unknown as {
       requestPermission?: () => Promise<'granted' | 'denied'>;
     };
-    if (typeof orientationConstructor.requestPermission === 'function') return;
+    const motionConstructor = window.DeviceMotionEvent as unknown as {
+      requestPermission?: () => Promise<'granted' | 'denied'>;
+    };
+    if (
+      typeof orientationConstructor?.requestPermission === 'function' ||
+      typeof motionConstructor?.requestPermission === 'function'
+    ) return;
 
     this.attachOrientationListener();
   }
@@ -280,8 +292,11 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     if (this.orientationListenerAttached) return;
 
     this.orientationBaseline = null;
+    this.motionBaseline = null;
+    this.sensorSource = null;
     window.addEventListener('deviceorientation', this.handleOrientation, { passive: true });
     window.addEventListener('deviceorientationabsolute', this.handleOrientation, { passive: true });
+    window.addEventListener('devicemotion', this.handleMotion, { passive: true });
     this.orientationListenerAttached = true;
     this.orientationSensorWaiting = true;
     if (this.orientationFallbackTimer !== null) window.clearTimeout(this.orientationFallbackTimer);
@@ -292,25 +307,45 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   }
 
   private async requestOrientationPermission() {
-    if (this.orientationPermissionRequested || typeof window.DeviceOrientationEvent === 'undefined') {
+    if (this.orientationPermissionRequested) {
       return;
     }
 
     const orientationConstructor = window.DeviceOrientationEvent as unknown as {
       requestPermission?: () => Promise<'granted' | 'denied'>;
     };
-    if (typeof orientationConstructor.requestPermission !== 'function') return;
+    const motionConstructor = window.DeviceMotionEvent as unknown as {
+      requestPermission?: () => Promise<'granted' | 'denied'>;
+    };
+    const requestOrientation = orientationConstructor?.requestPermission;
+    const requestMotion = motionConstructor?.requestPermission;
+
+    if (typeof requestOrientation !== 'function' && typeof requestMotion !== 'function') {
+      if (!this.orientationListenerAttached) this.attachOrientationListener();
+      return;
+    }
 
     this.orientationPermissionRequested = true;
     this.orientationSensorWaiting = true;
 
     try {
-      const permission = await orientationConstructor.requestPermission();
-      if (permission === 'granted') {
+      if (typeof requestOrientation === 'function' && (await requestOrientation.call(orientationConstructor)) === 'granted') {
         this.attachOrientationListener();
-      } else {
-        this.orientationSensorWaiting = false;
+        this.zone.run(() => {
+          this.motionPermissionVisible = false;
+        });
+        return;
       }
+
+      if (typeof requestMotion === 'function' && (await requestMotion.call(motionConstructor)) === 'granted') {
+        this.attachOrientationListener();
+        this.zone.run(() => {
+          this.motionPermissionVisible = false;
+        });
+        return;
+      }
+
+      this.orientationSensorWaiting = false;
     } catch {
       // Pointer/touch tracking remains active when motion permission is unavailable.
       this.orientationSensorWaiting = false;
@@ -326,6 +361,27 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     void this.requestOrientationPermission();
   };
 
+  onEntranceTouchStart() {
+    void this.requestOrientationPermission();
+  }
+
+  onMotionPermissionClick() {
+    void this.requestOrientationPermission();
+  }
+
+  private motionPermissionIsRequired() {
+    const orientationConstructor = window.DeviceOrientationEvent as unknown as {
+      requestPermission?: () => Promise<'granted' | 'denied'>;
+    };
+    const motionConstructor = window.DeviceMotionEvent as unknown as {
+      requestPermission?: () => Promise<'granted' | 'denied'>;
+    };
+    return (
+      typeof orientationConstructor?.requestPermission === 'function' ||
+      typeof motionConstructor?.requestPermission === 'function'
+    );
+  }
+
   private readonly handleTouchStart = () => {
     void this.requestOrientationPermission();
   };
@@ -335,6 +391,7 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
 
     this.orientationDataActive = true;
     this.orientationSensorWaiting = false;
+    this.sensorSource = 'orientation';
     if (this.orientationFallbackTimer !== null) {
       window.clearTimeout(this.orientationFallbackTimer);
       this.orientationFallbackTimer = null;
@@ -348,6 +405,27 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     // Calibrate from the phone's resting pose so portrait/landscape devices start centered.
     this.entranceTarget.x = this.clamp((event.gamma - this.orientationBaseline.gamma) / 24, -1, 1);
     this.entranceTarget.y = this.clamp((event.beta - this.orientationBaseline.beta) / 24, -1, 1);
+    this.entranceTarget.active = true;
+  };
+
+  private readonly handleMotion = (event: DeviceMotionEvent) => {
+    if (this.entranceExiting || this.sensorSource === 'orientation') return;
+
+    const gravity = event.accelerationIncludingGravity;
+    if (!gravity || gravity.x === null || gravity.y === null) return;
+
+    this.orientationDataActive = true;
+    this.orientationSensorWaiting = false;
+    this.sensorSource = 'motion';
+    if (!this.motionBaseline) {
+      this.motionBaseline = { x: gravity.x, y: gravity.y };
+      this.entranceTarget = { x: 0, y: 0, active: true };
+      return;
+    }
+
+    // Gravity changes with phone tilt; calibrating the resting pose keeps the character centered.
+    this.entranceTarget.x = this.clamp((gravity.x - this.motionBaseline.x) / 4.5, -1, 1);
+    this.entranceTarget.y = this.clamp((gravity.y - this.motionBaseline.y) / 4.5, -1, 1);
     this.entranceTarget.active = true;
   };
 
@@ -584,6 +662,7 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     if (this.orientationListenerAttached) {
       window.removeEventListener('deviceorientation', this.handleOrientation);
       window.removeEventListener('deviceorientationabsolute', this.handleOrientation);
+      window.removeEventListener('devicemotion', this.handleMotion);
       this.orientationListenerAttached = false;
     }
     if (this.orientationFallbackTimer !== null) {

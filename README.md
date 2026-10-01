@@ -12,6 +12,16 @@ ng serve
 
 Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
 
+### Mobile motion preview
+
+The entrance gyro effect requires a secure browser context. To preview it on a phone over the local network, run:
+
+```bash
+npm run start:mobile
+```
+
+Then open the displayed `https://<your-computer-ip>:4200/` URL on the phone and accept the browser certificate warning. iOS also requires allowing motion access when prompted.
+
 ## Code scaffolding
 
 Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
