@@ -36,6 +36,7 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   entranceExiting = false;
   bulbReady = false;
   motionPermissionVisible = false;
+  motionFeedback = '';
   blackoutActive = false;
 
   private pinned: HTMLElement | null = null;
@@ -55,16 +56,12 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   private loadingStartedAt = 0;
   private lastEntranceFrame = 0;
   private entranceListenersAttached = false;
-  private orientationListenerAttached = false;
-  private orientationDataActive = false;
-  private orientationPermissionRequested = false;
-  private orientationBaseline: { beta: number; gamma: number } | null = null;
-  private motionBaseline: { x: number; y: number } | null = null;
-  private sensorSource: 'orientation' | 'motion' | null = null;
-  private orientationSensorWaiting = false;
-  private orientationFallbackTimer: number | null = null;
-  private entranceTarget = { x: 0, y: 0, active: false };
-  private entranceCurrent = { x: 0, y: 0 };
+  private isGyroActive = false;
+  private motionPermissionRequestPending = false;
+  private targetX = 0;
+  private targetY = 0;
+  private currentX = 0;
+  private currentY = 0;
   private entranceTilt = 0;
   private entranceReacting = false;
   private readonly characterAbortController = new AbortController();
@@ -166,10 +163,6 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     pinned.style.setProperty('--name-travel', `${Math.round(end - start)}px`);
   }
 
-  onEntrancePointerDown() {
-    void this.requestOrientationPermission();
-  }
-
   private async loadCharacter() {
     this.attachEntranceListeners();
 
@@ -234,11 +227,9 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   private attachEntranceListeners() {
     if (this.entranceListenersAttached) return;
 
-    window.addEventListener('pointermove', this.handlePointerMove, { passive: true });
-    window.addEventListener('pointerdown', this.handlePointerDown, { passive: true });
-    window.addEventListener('touchstart', this.handleTouchStart, { passive: true });
+    window.addEventListener('mousemove', this.handleMouseMove, { passive: true });
+    window.addEventListener('touchmove', this.handleTouchMove, { passive: true });
     window.addEventListener('blur', this.resetEntranceTarget, { passive: true });
-    this.attachOrientationListenerIfAvailable();
     this.entranceListenersAttached = true;
   }
 
@@ -265,201 +256,109 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     this.host.nativeElement.querySelector('.bulb-instruction')?.classList.add('is-visible');
     this.zone.run(() => {
       this.bulbReady = true;
-      this.motionPermissionVisible = this.motionPermissionIsRequired() || (
-        this.isTouchDevice() && !this.orientationDataActive
-      );
+      this.motionPermissionVisible = this.motionPermissionIsRequired() || this.isTouchDevice();
     });
   };
 
-  private attachOrientationListenerIfAvailable() {
-    const hasOrientation = typeof window.DeviceOrientationEvent !== 'undefined';
-    const hasMotion = typeof window.DeviceMotionEvent !== 'undefined';
-    if (!hasOrientation && !hasMotion) return;
+  private readonly requestMotionPermission = () => {
+    if (this.isGyroActive || this.motionPermissionRequestPending) return;
 
     const orientationConstructor = window.DeviceOrientationEvent as unknown as {
       requestPermission?: () => Promise<'granted' | 'denied'>;
     };
-    const motionConstructor = window.DeviceMotionEvent as unknown as {
-      requestPermission?: () => Promise<'granted' | 'denied'>;
-    };
-    if (
-      typeof orientationConstructor?.requestPermission === 'function' ||
-      typeof motionConstructor?.requestPermission === 'function'
-    ) return;
 
-    this.attachOrientationListener();
-  }
-
-  private attachOrientationListener() {
-    if (this.orientationListenerAttached) return;
-
-    this.orientationBaseline = null;
-    this.motionBaseline = null;
-    this.sensorSource = null;
-    window.addEventListener('deviceorientation', this.handleOrientation, { passive: true });
-    window.addEventListener('deviceorientationabsolute', this.handleOrientation, { passive: true });
-    window.addEventListener('devicemotion', this.handleMotion, { passive: true });
-    this.orientationListenerAttached = true;
-    this.orientationSensorWaiting = true;
-    if (this.orientationFallbackTimer !== null) window.clearTimeout(this.orientationFallbackTimer);
-    this.orientationFallbackTimer = window.setTimeout(() => {
-      this.orientationSensorWaiting = false;
-      this.orientationFallbackTimer = null;
-    }, 1800);
-  }
-
-  private async requestOrientationPermission() {
-    if (this.orientationPermissionRequested) {
+    // This call intentionally stays directly inside the trusted click/touch call stack.
+    if (typeof orientationConstructor?.requestPermission === 'function') {
+      this.motionPermissionRequestPending = true;
+      try {
+        const permissionRequest = orientationConstructor.requestPermission();
+        permissionRequest.then((permissionState) => {
+          this.motionPermissionRequestPending = false;
+          if (permissionState === 'granted') {
+            this.enableGyro('Motion enabled successfully.');
+          } else {
+            this.showMotionFeedback('Permission denied. Allow Motion access in Safari Settings.', true);
+          }
+        }).catch((error: unknown) => {
+          this.motionPermissionRequestPending = false;
+          console.error(error);
+          this.showMotionFeedback('Motion error. Please check browser permissions and try again.', true);
+        });
+      } catch (error) {
+        this.motionPermissionRequestPending = false;
+        console.error(error);
+        this.showMotionFeedback('Motion error. Please check browser permissions and try again.', true);
+      }
       return;
     }
 
-    const orientationConstructor = window.DeviceOrientationEvent as unknown as {
-      requestPermission?: () => Promise<'granted' | 'denied'>;
-    };
-    const motionConstructor = window.DeviceMotionEvent as unknown as {
-      requestPermission?: () => Promise<'granted' | 'denied'>;
-    };
-    const requestOrientation = orientationConstructor?.requestPermission;
-    const requestMotion = motionConstructor?.requestPermission;
-
-    if (typeof requestOrientation !== 'function' && typeof requestMotion !== 'function') {
-      if (!this.orientationListenerAttached) this.attachOrientationListener();
+    if ('DeviceOrientationEvent' in window) {
+      this.enableGyro('Motion enabled.');
       return;
     }
 
-    this.orientationPermissionRequested = true;
-    this.orientationSensorWaiting = true;
+    this.showMotionFeedback('Gyroscope is not supported on this browser/device.');
+  };
 
-    try {
-      if (typeof requestOrientation === 'function' && (await requestOrientation.call(orientationConstructor)) === 'granted') {
-        this.attachOrientationListener();
-        this.zone.run(() => {
-          this.motionPermissionVisible = false;
-        });
-        return;
-      }
-
-      if (typeof requestMotion === 'function' && (await requestMotion.call(motionConstructor)) === 'granted') {
-        this.attachOrientationListener();
-        this.zone.run(() => {
-          this.motionPermissionVisible = false;
-        });
-        return;
-      }
-
-      this.orientationSensorWaiting = false;
-    } catch {
-      // Pointer/touch tracking remains active when motion permission is unavailable.
-      this.orientationSensorWaiting = false;
+  private enableGyro(message: string) {
+    if (!this.isGyroActive) {
+      window.addEventListener('deviceorientation', this.handleGyroMove, true);
+      this.isGyroActive = true;
     }
+    this.motionPermissionVisible = false;
+    this.showMotionFeedback(message);
   }
 
-  private readonly handlePointerMove = (event: PointerEvent) => {
-    if (this.entranceExiting || this.orientationDataActive || this.orientationSensorWaiting || !this.characterSvg) return;
-    this.setEntranceTargetFromClient(event.clientX, event.clientY);
-  };
-
-  private readonly handlePointerDown = () => {
-    void this.requestOrientationPermission();
-  };
-
-  onEntranceTouchStart() {
-    void this.requestOrientationPermission();
+  private showMotionFeedback(message: string, showPermissionButton = false) {
+    this.zone.run(() => {
+      this.motionFeedback = message;
+      if (showPermissionButton) this.motionPermissionVisible = true;
+    });
   }
 
   onMotionPermissionClick() {
-    void this.requestOrientationPermission();
+    this.requestMotionPermission();
   }
 
   private motionPermissionIsRequired() {
     const orientationConstructor = window.DeviceOrientationEvent as unknown as {
       requestPermission?: () => Promise<'granted' | 'denied'>;
     };
-    const motionConstructor = window.DeviceMotionEvent as unknown as {
-      requestPermission?: () => Promise<'granted' | 'denied'>;
-    };
-    return (
-      typeof orientationConstructor?.requestPermission === 'function' ||
-      typeof motionConstructor?.requestPermission === 'function'
-    );
+    return typeof orientationConstructor?.requestPermission === 'function';
   }
 
   private isTouchDevice() {
     return window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
   }
 
-  private readonly handleTouchStart = () => {
-    void this.requestOrientationPermission();
+  private readonly handleMouseMove = (event: MouseEvent) => {
+    if (this.isGyroActive) return;
+    this.setFallbackTarget(event.clientX / window.innerWidth, event.clientY / window.innerHeight);
   };
 
-  private readonly handleOrientation = (event: DeviceOrientationEvent) => {
-    if (this.entranceExiting || event.beta === null || event.gamma === null) return;
-
-    const firstSensorEvent = this.sensorSource === null;
-    this.orientationDataActive = true;
-    this.orientationSensorWaiting = false;
-    this.sensorSource = 'orientation';
-    if (firstSensorEvent) {
-      this.zone.run(() => {
-        this.motionPermissionVisible = false;
-      });
-    }
-    if (this.orientationFallbackTimer !== null) {
-      window.clearTimeout(this.orientationFallbackTimer);
-      this.orientationFallbackTimer = null;
-    }
-    if (!this.orientationBaseline) {
-      this.orientationBaseline = { beta: event.beta, gamma: event.gamma };
-      this.entranceTarget = { x: 0, y: 0, active: true };
-      return;
-    }
-
-    // Calibrate from the phone's resting pose so portrait/landscape devices start centered.
-    this.entranceTarget.x = this.clamp((event.gamma - this.orientationBaseline.gamma) / 24, -1, 1);
-    this.entranceTarget.y = this.clamp((event.beta - this.orientationBaseline.beta) / 24, -1, 1);
-    this.entranceTarget.active = true;
+  private readonly handleTouchMove = (event: TouchEvent) => {
+    if (this.isGyroActive || event.touches.length === 0) return;
+    const touch = event.touches[0];
+    this.setFallbackTarget(touch.clientX / window.innerWidth, touch.clientY / window.innerHeight);
   };
 
-  private readonly handleMotion = (event: DeviceMotionEvent) => {
-    if (this.entranceExiting || this.sensorSource === 'orientation') return;
+  private readonly handleGyroMove = (event: DeviceOrientationEvent) => {
+    if (event.gamma === null || event.beta === null) return;
 
-    const gravity = event.accelerationIncludingGravity;
-    if (!gravity || gravity.x === null || gravity.y === null) return;
-
-    const firstSensorEvent = this.sensorSource === null;
-    this.orientationDataActive = true;
-    this.orientationSensorWaiting = false;
-    this.sensorSource = 'motion';
-    if (firstSensorEvent) {
-      this.zone.run(() => {
-        this.motionPermissionVisible = false;
-      });
-    }
-    if (!this.motionBaseline) {
-      this.motionBaseline = { x: gravity.x, y: gravity.y };
-      this.entranceTarget = { x: 0, y: 0, active: true };
-      return;
-    }
-
-    // Gravity changes with phone tilt; calibrating the resting pose keeps the character centered.
-    this.entranceTarget.x = this.clamp((gravity.x - this.motionBaseline.x) / 4.5, -1, 1);
-    this.entranceTarget.y = this.clamp((gravity.y - this.motionBaseline.y) / 4.5, -1, 1);
-    this.entranceTarget.active = true;
+    const gamma = this.clamp(event.gamma, -30, 30);
+    const beta = this.clamp(event.beta, 10, 70);
+    this.targetX = gamma / 30;
+    this.targetY = (beta - 40) / 30;
   };
 
   private readonly resetEntranceTarget = () => {
-    this.entranceTarget.active = false;
+    this.targetX = 0;
+    this.targetY = 0;
   };
 
-  private setEntranceTargetFromClient(clientX: number, clientY: number) {
-    if (!this.characterSvg) return;
-
-    const rect = this.characterSvg.getBoundingClientRect();
-    if (!rect.width || !rect.height) return;
-
-    this.entranceTarget.x = this.clamp(((clientX - rect.left) / rect.width) * 2 - 1, -1, 1);
-    this.entranceTarget.y = this.clamp(((clientY - rect.top) / rect.height) * 2 - 1, -1, 1);
-    this.entranceTarget.active = true;
+  private setFallbackTarget(normalizedX: number, normalizedY: number) {
+    this.targetX = this.clamp(normalizedX * 2 - 1, -1, 1);
+    this.targetY = this.clamp(normalizedY * 2 - 1, -1, 1);
   }
 
   private readonly renderEntrance = (timestamp: number) => {
@@ -471,16 +370,14 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
       : 1 / 60;
     this.lastEntranceFrame = timestamp;
 
-    const targetX = this.entranceTarget.active ? this.entranceTarget.x : 0;
-    const targetY = this.entranceTarget.active ? this.entranceTarget.y : 0;
-    const interpolation = 1 - Math.exp(-8 * deltaTime);
-    this.entranceCurrent.x += (targetX - this.entranceCurrent.x) * interpolation;
-    this.entranceCurrent.y += (targetY - this.entranceCurrent.y) * interpolation;
+    const interpolation = this.reduceMotion ? 1 : 0.1;
+    this.currentX += (this.targetX - this.currentX) * interpolation;
+    this.currentY += (this.targetY - this.currentY) * interpolation;
 
-    const targetTilt = this.entranceCurrent.x * MAX_HEAD_TILT;
+    const targetTilt = this.currentX * MAX_HEAD_TILT;
     this.entranceTilt += (targetTilt - this.entranceTilt) * interpolation;
-    const pupilX = this.entranceCurrent.x * MAX_PUPIL_X;
-    const pupilY = this.entranceCurrent.y * MAX_PUPIL_Y;
+    const pupilX = this.currentX * MAX_PUPIL_X;
+    const pupilY = this.currentY * MAX_PUPIL_Y;
     const pupilTransform = `translate(${pupilX.toFixed(2)} ${pupilY.toFixed(2)})`;
 
     this.leftPupil?.setAttribute('transform', pupilTransform);
@@ -489,7 +386,7 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     this.rightCatchlight?.setAttribute('transform', pupilTransform);
 
     const bob = this.entranceReacting ? 0 : Math.sin(timestamp / 850) * 2.5;
-    const headFollowY = this.entranceReacting ? 0 : this.entranceCurrent.y * 3;
+    const headFollowY = this.entranceReacting ? 0 : this.currentY * 3;
     this.headFollowLayer?.setAttribute(
       'transform',
       `translate(0 ${(bob + headFollowY).toFixed(2)}) rotate(${this.entranceTilt.toFixed(2)} 425 430)`,
@@ -526,8 +423,10 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     if (!this.characterSvg || !this.bulbReady || this.entranceExiting) return;
 
     this.entranceReacting = true;
-    this.entranceTarget = { x: 0, y: 0, active: false };
-    this.entranceCurrent = { x: 0, y: 0 };
+    this.targetX = 0;
+    this.targetY = 0;
+    this.currentX = 0;
+    this.currentY = 0;
     this.entranceTilt = 0;
     this.leftPupil?.setAttribute('transform', 'translate(0 0)');
     this.rightPupil?.setAttribute('transform', 'translate(0 0)');
@@ -671,22 +570,16 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     this.exitTimer = null;
 
     if (this.entranceListenersAttached) {
-      window.removeEventListener('pointermove', this.handlePointerMove);
-      window.removeEventListener('pointerdown', this.handlePointerDown);
-      window.removeEventListener('touchstart', this.handleTouchStart);
+      window.removeEventListener('mousemove', this.handleMouseMove);
+      window.removeEventListener('touchmove', this.handleTouchMove);
       window.removeEventListener('blur', this.resetEntranceTarget);
       this.entranceListenersAttached = false;
     }
-    if (this.orientationListenerAttached) {
-      window.removeEventListener('deviceorientation', this.handleOrientation);
-      window.removeEventListener('deviceorientationabsolute', this.handleOrientation);
-      window.removeEventListener('devicemotion', this.handleMotion);
-      this.orientationListenerAttached = false;
+    if (this.isGyroActive) {
+      window.removeEventListener('deviceorientation', this.handleGyroMove, true);
+      this.isGyroActive = false;
     }
-    if (this.orientationFallbackTimer !== null) {
-      window.clearTimeout(this.orientationFallbackTimer);
-      this.orientationFallbackTimer = null;
-    }
+    this.motionPermissionRequestPending = false;
     this.headHitArea?.removeEventListener('pointerup', this.activateFromPointer);
     this.characterSvg?.removeEventListener('keydown', this.activateFromKeyboard);
     this.characterMount?.nativeElement.replaceChildren();

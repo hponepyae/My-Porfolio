@@ -6,8 +6,6 @@
   role="dialog"
   aria-modal="true"
   aria-label="Portfolio entrance"
-  (pointerdown)="onEntrancePointerDown()"
-  (touchstart)="onEntranceTouchStart()"
 >
   <div class="character-entrance-stage">
     <svg
@@ -91,6 +89,14 @@
     >
       enable motion
     </button>
+    <p
+      class="motion-feedback"
+      [class.is-visible]="motionFeedback"
+      role="status"
+      aria-live="polite"
+    >
+      {{ motionFeedback }}
+    </p>
   </div>
 </div>
 
