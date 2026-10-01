@@ -58,6 +58,8 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   private orientationDataActive = false;
   private orientationPermissionRequested = false;
   private orientationBaseline: { beta: number; gamma: number } | null = null;
+  private orientationSensorWaiting = false;
+  private orientationFallbackTimer: number | null = null;
   private entranceTarget = { x: 0, y: 0, active: false };
   private entranceCurrent = { x: 0, y: 0 };
   private entranceTilt = 0;
@@ -231,6 +233,7 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
 
     window.addEventListener('pointermove', this.handlePointerMove, { passive: true });
     window.addEventListener('pointerdown', this.handlePointerDown, { passive: true });
+    window.addEventListener('touchstart', this.handleTouchStart, { passive: true });
     window.addEventListener('blur', this.resetEntranceTarget, { passive: true });
     this.attachOrientationListenerIfAvailable();
     this.entranceListenersAttached = true;
@@ -278,7 +281,14 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
 
     this.orientationBaseline = null;
     window.addEventListener('deviceorientation', this.handleOrientation, { passive: true });
+    window.addEventListener('deviceorientationabsolute', this.handleOrientation, { passive: true });
     this.orientationListenerAttached = true;
+    this.orientationSensorWaiting = true;
+    if (this.orientationFallbackTimer !== null) window.clearTimeout(this.orientationFallbackTimer);
+    this.orientationFallbackTimer = window.setTimeout(() => {
+      this.orientationSensorWaiting = false;
+      this.orientationFallbackTimer = null;
+    }, 1800);
   }
 
   private async requestOrientationPermission() {
@@ -292,19 +302,23 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     if (typeof orientationConstructor.requestPermission !== 'function') return;
 
     this.orientationPermissionRequested = true;
+    this.orientationSensorWaiting = true;
 
     try {
       const permission = await orientationConstructor.requestPermission();
       if (permission === 'granted') {
         this.attachOrientationListener();
+      } else {
+        this.orientationSensorWaiting = false;
       }
     } catch {
       // Pointer/touch tracking remains active when motion permission is unavailable.
+      this.orientationSensorWaiting = false;
     }
   }
 
   private readonly handlePointerMove = (event: PointerEvent) => {
-    if (this.entranceExiting || this.orientationDataActive || !this.characterSvg) return;
+    if (this.entranceExiting || this.orientationDataActive || this.orientationSensorWaiting || !this.characterSvg) return;
     this.setEntranceTargetFromClient(event.clientX, event.clientY);
   };
 
@@ -312,10 +326,19 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     void this.requestOrientationPermission();
   };
 
+  private readonly handleTouchStart = () => {
+    void this.requestOrientationPermission();
+  };
+
   private readonly handleOrientation = (event: DeviceOrientationEvent) => {
     if (this.entranceExiting || event.beta === null || event.gamma === null) return;
 
     this.orientationDataActive = true;
+    this.orientationSensorWaiting = false;
+    if (this.orientationFallbackTimer !== null) {
+      window.clearTimeout(this.orientationFallbackTimer);
+      this.orientationFallbackTimer = null;
+    }
     if (!this.orientationBaseline) {
       this.orientationBaseline = { beta: event.beta, gamma: event.gamma };
       this.entranceTarget = { x: 0, y: 0, active: true };
@@ -554,12 +577,18 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     if (this.entranceListenersAttached) {
       window.removeEventListener('pointermove', this.handlePointerMove);
       window.removeEventListener('pointerdown', this.handlePointerDown);
+      window.removeEventListener('touchstart', this.handleTouchStart);
       window.removeEventListener('blur', this.resetEntranceTarget);
       this.entranceListenersAttached = false;
     }
     if (this.orientationListenerAttached) {
       window.removeEventListener('deviceorientation', this.handleOrientation);
+      window.removeEventListener('deviceorientationabsolute', this.handleOrientation);
       this.orientationListenerAttached = false;
+    }
+    if (this.orientationFallbackTimer !== null) {
+      window.clearTimeout(this.orientationFallbackTimer);
+      this.orientationFallbackTimer = null;
     }
     this.headHitArea?.removeEventListener('pointerup', this.activateFromPointer);
     this.characterSvg?.removeEventListener('keydown', this.activateFromKeyboard);
